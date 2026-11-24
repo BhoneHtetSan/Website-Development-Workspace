@@ -460,212 +460,84 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
             return '€' + rounded.toFixed(2);
         }
 
-        // --- COMPRESSED SHARE LINK HELPERS ---
-        function bytesToBase64Url(bytes) {
+        // --- UNCOMPRESSED SHARE LINK HELPERS ---
+        function encodeShareState() {
+            const payload = {
+                t: receiptTitle,
+                p: people.map(person => ({
+                    id: person.id,
+                    name: person.name,
+                    colorIdx: person.colorIdx
+                })),
+                i: items.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    selectedPeople: item.selectedPeople
+                }))
+            };
+
+            const jsonStr = JSON.stringify(payload);
+            const bytes = new TextEncoder().encode(jsonStr);
             let binary = '';
-            const chunkSize = 0x8000;
-            for (let i = 0; i < bytes.length; i += chunkSize) {
-                const slice = bytes.subarray(i, i + chunkSize);
-                binary += String.fromCharCode.apply(null, slice);
-            }
+            bytes.forEach(b => {
+                binary += String.fromCharCode(b);
+            });
+
+            // Encode UTF-8 JSON bytes into URL-safe Base64 without stream compression
             return btoa(binary)
                 .replace(/\+/g, '-')
                 .replace(/\//g, '_')
                 .replace(/=+$/, '');
         }
 
-        function base64UrlToBytes(base64UrlStr) {
-            if (!base64UrlStr || !/^[A-Za-z0-9\-_]+$/.test(base64UrlStr)) {
-                throw new Error('Invalid base64url characters');
-            }
-            let base64 = base64UrlStr.replace(/-/g, '+').replace(/_/g, '/');
-            while (base64.length % 4) base64 += '=';
-            const binary = atob(base64);
-            const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) {
-                bytes[i] = binary.charCodeAt(i);
-            }
-            return bytes;
-        }
+        function loadSharedStateFromHash() {
+            const hash = window.location.hash || '';
+            const match = hash.match(/state=([A-Za-z0-9\-_]+)/);
+            if (!match || !match[1]) return false;
 
-        async function compressBytes(rawBytes, format) {
-            if (typeof CompressionStream === 'undefined') {
-                throw new Error('CompressionStream not supported');
-            }
-            const stream = new Blob([rawBytes]).stream().pipeThrough(new CompressionStream(format));
-            const buffer = await new Response(stream).arrayBuffer();
-            return new Uint8Array(buffer);
-        }
+            try {
+                let base64 = match[1].replace(/-/g, '+').replace(/_/g, '/');
+                while (base64.length % 4) base64 += '=';
 
-        async function decompressBytes(compressedBytes, format) {
-            if (typeof DecompressionStream === 'undefined') {
-                throw new Error('DecompressionStream not supported');
-            }
-            const stream = new Blob([compressedBytes]).stream().pipeThrough(new DecompressionStream(format));
-            const buffer = await new Response(stream).arrayBuffer();
-            return new Uint8Array(buffer);
-        }
+                const binary = atob(base64);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) {
+                    bytes[i] = binary.charCodeAt(i);
+                }
 
-        // Build compact JSON payload (positional person indices + integer cents) for shorter URLs
-        function buildCompactSharePayload() {
-            const idToIndex = new Map();
-            const compactPeople = people.map((person, idx) => {
-                idToIndex.set(person.id, idx);
-                return person.colorIdx === idx
-                    ? [person.name]
-                    : [person.name, person.colorIdx];
-            });
+                const jsonStr = new TextDecoder().decode(bytes);
+                const parsed = JSON.parse(jsonStr);
+                if (!parsed || typeof parsed !== 'object') return false;
 
-            const compactItems = items.map(item => {
-                const cents = Math.round((item.price + Number.EPSILON) * 100);
-                const selectedIndices = item.selectedPeople
-                    .map(pid => idToIndex.get(pid))
-                    .filter(idx => typeof idx === 'number');
-                return [item.name, cents, selectedIndices];
-            });
+                if (typeof parsed.t === 'string' && parsed.t.trim()) {
+                    receiptTitle = parsed.t.trim().toUpperCase();
+                }
 
-            return {
-                v: 2,
-                t: receiptTitle,
-                p: compactPeople,
-                i: compactItems
-            };
-        }
-
-        function applyDecodedSharePayload(parsed) {
-            if (!parsed || typeof parsed !== 'object') return false;
-
-            if (typeof parsed.t === 'string' && parsed.t.trim()) {
-                receiptTitle = parsed.t.trim().toUpperCase();
-            }
-
-            // Support compact v2 format ([name, optionalColorIdx] and [name, cents, [personIdx]])
-            if (parsed.v === 2 && Array.isArray(parsed.p) && parsed.p.length >= MIN_PEOPLE) {
-                const indexToId = [];
-                const expandedPeople = parsed.p.slice(0, MAX_PEOPLE).map((entry, idx) => {
-                    const id = idx + 1;
-                    indexToId.push(id);
-                    const name = Array.isArray(entry) && typeof entry[0] === 'string' && entry[0].trim()
-                        ? entry[0].trim()
-                        : `Person ${idx + 1}`;
-                    const colorIdx = Array.isArray(entry) && Number.isInteger(entry[1])
-                        ? entry[1]
-                        : idx;
-                    return { id, name, colorIdx };
-                });
-
-                const sanitizedPeople = sanitizePeopleList(expandedPeople);
+                const sanitizedPeople = sanitizePeopleList(parsed.p);
                 if (!sanitizedPeople) return false;
                 people = sanitizedPeople;
+                items = sanitizeItemsList(parsed.i, people);
 
-                const expandedItems = Array.isArray(parsed.i)
-                    ? parsed.i.map((entry, idx) => {
-                        const name = Array.isArray(entry) && typeof entry[0] === 'string'
-                            ? entry[0]
-                            : `Item ${idx + 1}`;
-                        const cents = Array.isArray(entry) ? Number(entry[1]) : 0;
-                        const selectedIndices = Array.isArray(entry) && Array.isArray(entry[2]) ? entry[2] : [];
-                        const selectedPeople = selectedIndices
-                            .map(pIdx => indexToId[pIdx])
-                            .filter(pid => typeof pid === 'number');
-                        return {
-                            id: Date.now() + idx + Math.random(),
-                            name,
-                            price: Number.isFinite(cents) ? cents / 100 : 0,
-                            selectedPeople
-                        };
-                    })
-                    : [];
-
-                items = sanitizeItemsList(expandedItems, people);
                 saveState();
                 return true;
-            }
-
-            // Support legacy object format ({ t, p, i })
-            const sanitizedPeople = sanitizePeopleList(parsed.p);
-            if (!sanitizedPeople) return false;
-            people = sanitizedPeople;
-            items = sanitizeItemsList(parsed.i, people);
-            saveState();
-            return true;
-        }
-
-        async function encodeShareState() {
-            const payload = buildCompactSharePayload();
-            const jsonStr = JSON.stringify(payload);
-            const rawBytes = new TextEncoder().encode(jsonStr);
-
-            // Prefix compressed payloads with 'c:' so decoder distinguishes compressed vs raw JSON
-            const prefixBytes = new TextEncoder().encode('c:');
-            for (const fmt of ['deflate-raw', 'gzip']) {
-                try {
-                    const compressed = await compressBytes(rawBytes, fmt);
-                    if (compressed && compressed.length > 0 && compressed.length < rawBytes.length) {
-                        const combined = new Uint8Array(prefixBytes.length + compressed.length);
-                        combined.set(prefixBytes, 0);
-                        combined.set(compressed, prefixBytes.length);
-                        return bytesToBase64Url(combined);
-                    }
-                } catch (_) {
-                    // Try next format or uncompressed fallback
-                }
-            }
-
-            return bytesToBase64Url(rawBytes);
-        }
-
-        async function loadSharedStateFromHash() {
-            try {
-                const hash = window.location.hash || '';
-                const match = hash.match(/state=([A-Za-z0-9\-_]+)/);
-                if (!match || !match[1]) return false;
-
-                const decodedBytes = base64UrlToBytes(match[1]);
-                if (decodedBytes.length === 0) return false;
-
-                const prefix = new TextDecoder().decode(decodedBytes.subarray(0, 2));
-                if (prefix === 'c:') {
-                    const compressedPayload = decodedBytes.subarray(2);
-                    let rawBytes = null;
-
-                    for (const fmt of ['deflate-raw', 'gzip']) {
-                        try {
-                            rawBytes = await decompressBytes(compressedPayload, fmt);
-                            break;
-                        } catch (_) {
-                            // Try next decompression format
-                        }
-                    }
-
-                    if (!rawBytes) {
-                        throw new Error('Failed to decompress shared state');
-                    }
-
-                    const jsonStr = new TextDecoder().decode(rawBytes);
-                    return applyDecodedSharePayload(JSON.parse(jsonStr));
-                }
-
-                // Fallback for uncompressed #state=... links
-                const jsonStr = new TextDecoder().decode(decodedBytes);
-                return applyDecodedSharePayload(JSON.parse(jsonStr));
             } catch (err) {
-                console.warn('Ignored invalid or unreadable share hash:', err);
+                console.warn('Failed to parse shared link state:', err);
                 return false;
             }
         }
 
-        async function copyShareLink() {
+        function copyShareLink() {
             try {
-                const encoded = await encodeShareState();
+                const encoded = encodeShareState();
                 const shareUrl = `${window.location.origin}${window.location.pathname}#state=${encoded}`;
 
                 if (navigator.clipboard && window.isSecureContext) {
                     navigator.clipboard.writeText(shareUrl)
-                        .then(() => showToast('Compressed share link copied!'))
-                        .catch(() => fallbackCopy(shareUrl, 'Compressed share link copied!'));
+                        .then(() => showToast('Shareable link copied!'))
+                        .catch(() => fallbackCopy(shareUrl, 'Shareable link copied!'));
                 } else {
-                    fallbackCopy(shareUrl, 'Compressed share link copied!');
+                    fallbackCopy(shareUrl, 'Shareable link copied!');
                 }
             } catch (err) {
                 console.error('Failed to create share link:', err);
@@ -676,6 +548,7 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
         // --- INITIALIZATION & EVENT LISTENERS ---
         document.addEventListener('DOMContentLoaded', () => {
             loadState();
+            const sharedLoaded = loadSharedStateFromHash();
 
             const titleInput = document.getElementById('receiptTitleInput');
             titleInput.value = receiptTitle;
@@ -685,17 +558,9 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
             renderItems();
             updateCalculations();
 
-            // Check URL hash asynchronously on load without blocking initial render
-            loadSharedStateFromHash().then(loaded => {
-                if (loaded) {
-                    titleInput.value = receiptTitle;
-                    renderPeople();
-                    renderItems();
-                    updateCalculations();
-                }
-            }).catch(err => {
-                console.warn('Hash load skipped:', err);
-            });
+            if (sharedLoaded) {
+                showToast('Loaded shared bill split!');
+            }
         });
 
         function setupEventListeners() {
