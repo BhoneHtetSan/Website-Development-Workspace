@@ -18,13 +18,13 @@
             }
         };
     </script>
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Inter for app UI, Roboto Mono for formal monospace receipt -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- html2canvas for Receipt JPEG Export -->
+    <!-- html2canvas for High-Resolution Receipt JPEG Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
@@ -45,7 +45,7 @@
             background: #475569;
         }
 
-        /* Crisp retro monospace receipt styling (Roboto Mono / DejaVu Sans Mono / Bitstream Vera Sans Mono, no underlines, tabular numbers, 2-col grid) */
+        /* Formal monospace receipt styling with regular 400 weight, 2-column grid, no underlines */
         #receiptCard,
         .receipt-export-clone {
             background-color: #ffffff;
@@ -53,9 +53,12 @@
             border: 1px solid #cbd5e1;
             font-family: 'Roboto Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
             line-height: 1.4;
+            letter-spacing: -0.04em;
+            word-spacing: -0.18em;
             overflow: visible;
             text-decoration: none;
             box-sizing: border-box;
+            font-weight: 400;
         }
         #receiptCard *,
         .receipt-export-clone * {
@@ -64,11 +67,14 @@
             text-overflow: clip;
             text-decoration: none;
             font-family: 'Roboto Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+            letter-spacing: -0.04em;
+            word-spacing: -0.18em;
+            font-weight: 400 !important;
         }
         .receipt-grid-row {
             display: grid;
             grid-template-columns: 1fr auto;
-            column-gap: 16px;
+            column-gap: 12px;
             align-items: start;
         }
         .receipt-col-desc {
@@ -98,8 +104,8 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen pb-16">
 
-    <!-- Top Navigation Header -->
-    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-30 shadow-md">
+    <!-- Top Navigation Header (normal flow, not sticky or fixed on scroll) -->
+    <header class="border-b border-slate-800 bg-slate-900 shadow-md">
         <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
@@ -306,37 +312,37 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
 
                     <!-- Structured Formal Business Receipt Card -->
                     <div id="receiptWrapper" class="hidden pt-2">
-                        <div id="receiptCard" class="w-full max-w-[420px] mx-auto bg-white text-slate-900 border border-slate-300 rounded-xl shadow-inner" style="padding: 26px 24px; font-family: 'Roboto Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', monospace;">
+                        <div id="receiptCard" class="font-normal w-full max-w-[420px] mx-auto bg-white text-slate-900 border border-slate-300 rounded-xl shadow-inner" style="padding: 26px 24px; font-family: 'Roboto Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', monospace; font-weight: 400; letter-spacing: -0.04em; word-spacing: -0.18em;">
                             <!-- Centered Header Block -->
                             <div class="text-center receipt-no-rule" style="margin-bottom: 14px;">
-                                <div id="receiptTitleDisplay" class="break-words receipt-no-rule" style="font-size: 15.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #000000; line-height: 1.35;">BILL SPLIT RECEIPT</div>
-                                <div id="receiptTimestamp" class="receipt-no-rule" style="font-size: 11px; font-weight: 400; color: #475569; margin-top: 4px; line-height: 1.35;"></div>
+                                <div id="receiptTitleDisplay" class="font-normal break-words receipt-no-rule" style="font-size: 15.5px; font-weight: 400; letter-spacing: -0.02em; word-spacing: -0.16em; text-transform: uppercase; color: #000000; line-height: 1.35;">BILL SPLIT RECEIPT</div>
+                                <div id="receiptTimestamp" class="font-normal receipt-no-rule" style="font-size: 11px; font-weight: 400; letter-spacing: -0.04em; word-spacing: -0.18em; color: #475569; margin-top: 4px; line-height: 1.35;"></div>
                             </div>
 
                             <!-- Unsplitted Full Item List Box -->
-                            <div class="receipt-section-box" style="margin-top: 12px; background-color: #f8fafc; border: 1px solid #e2e8f0;">
-                                <div class="receipt-no-rule" style="font-weight: 700; font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: #0f172a; margin-bottom: 7px;">FULL ITEM LIST</div>
+                            <div class="receipt-section-box font-normal" style="margin-top: 12px; background-color: #f8fafc; border: 1px solid #e2e8f0;">
+                                <div class="font-normal receipt-no-rule" style="font-weight: 400; font-size: 11px; letter-spacing: -0.02em; word-spacing: -0.16em; text-transform: uppercase; color: #0f172a; margin-bottom: 7px;">FULL ITEM LIST</div>
                                 <div id="receiptFullItems" style="display: flex; flex-direction: column; gap: 4px;"></div>
-                                <div class="receipt-grid-row receipt-no-rule" style="margin-top: 10px; background-color: #e2e8f0; padding: 8px 10px; border-radius: 6px;">
-                                    <span class="receipt-col-desc receipt-no-rule" style="font-weight: 700; font-size: 13px; color: #000000;">TOTAL</span>
-                                    <span id="receiptGrandTotal" class="receipt-col-amt receipt-no-rule" style="font-weight: 700; font-size: 13px; color: #000000;">€0.00</span>
+                                <div class="receipt-grid-row receipt-no-rule font-normal" style="margin-top: 10px; background-color: #e2e8f0; padding: 8px 10px; border-radius: 6px;">
+                                    <span class="receipt-col-desc receipt-no-rule font-normal" style="font-weight: 400; font-size: 13px; color: #000000;">TOTAL</span>
+                                    <span id="receiptGrandTotal" class="receipt-col-amt receipt-no-rule font-normal" style="font-weight: 400; font-size: 13px; color: #000000;">€0.00</span>
                                 </div>
                             </div>
 
                             <!-- Per-Person Breakdown -->
-                            <div class="receipt-no-rule" style="margin-top: 14px;">
-                                <div class="receipt-no-rule" style="font-weight: 700; font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: #0f172a; margin-bottom: 7px;">PER-PERSON BREAKDOWN</div>
+                            <div class="receipt-no-rule font-normal" style="margin-top: 14px;">
+                                <div class="font-normal receipt-no-rule" style="font-weight: 400; font-size: 11px; letter-spacing: -0.02em; word-spacing: -0.16em; text-transform: uppercase; color: #0f172a; margin-bottom: 7px;">PER-PERSON BREAKDOWN</div>
                                 <div id="receiptPeopleSections" style="display: flex; flex-direction: column; gap: 8px;"></div>
                             </div>
 
                             <!-- Unassigned Items Section (Rendered when unassigned entries exist) -->
-                            <div id="receiptUnassignedSection" class="hidden receipt-section-box" style="margin-top: 12px; background-color: #fafaf9; border: 1px solid #e7e5e4;">
-                                <div class="receipt-no-rule" style="font-weight: 700; font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: #0f172a; margin-bottom: 6px;">UNASSIGNED ENTRIES</div>
+                            <div id="receiptUnassignedSection" class="hidden receipt-section-box font-normal" style="margin-top: 12px; background-color: #fafaf9; border: 1px solid #e7e5e4;">
+                                <div class="font-normal receipt-no-rule" style="font-weight: 400; font-size: 11px; letter-spacing: -0.02em; word-spacing: -0.16em; text-transform: uppercase; color: #0f172a; margin-bottom: 6px;">UNASSIGNED ENTRIES</div>
                                 <div id="receiptUnassignedItems" style="display: flex; flex-direction: column; gap: 4px;"></div>
                             </div>
 
-                            <div class="text-center receipt-no-rule" style="margin-top: 14px; font-size: 10px; font-weight: 400; color: #64748b; line-height: 1.35;">
-                                Screenshot or tap "Save JPG" to download
+                            <div class="text-center receipt-no-rule font-normal" style="margin-top: 14px; font-size: 10px; font-weight: 400; letter-spacing: -0.04em; word-spacing: -0.18em; color: #64748b; line-height: 1.35;">
+                                Mr.Bhone's Bill Splitter
                             </div>
                         </div>
                     </div>
@@ -494,7 +500,7 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
             return '€' + rounded.toFixed(2);
         }
 
-        // --- UNCOMPRESSED SHARE LINK HELPERS ---
+        // --- SHARE LINK HELPERS (UTF-8 URL-safe Base64 in URL hash) ---
         function encodeShareState() {
             const payload = {
                 t: receiptTitle,
@@ -518,7 +524,6 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                 binary += String.fromCharCode(b);
             });
 
-            // Encode UTF-8 JSON bytes into URL-safe Base64 without stream compression
             return btoa(binary)
                 .replace(/\+/g, '-')
                 .replace(/\//g, '_')
@@ -749,6 +754,9 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
             clone.style.backgroundColor = '#ffffff';
             clone.style.color = '#0f172a';
             clone.style.fontFamily = "'Roboto Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', monospace";
+            clone.style.fontWeight = '400';
+            clone.style.letterSpacing = '-0.04em';
+            clone.style.wordSpacing = '-0.18em';
             clone.style.padding = '26px 24px';
             clone.style.borderRadius = '0';
             clone.style.border = 'none';
@@ -760,6 +768,9 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                 el.style.textOverflow = 'clip';
                 el.style.textDecoration = 'none';
                 el.style.fontFamily = "'Roboto Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', monospace";
+                el.style.letterSpacing = '-0.04em';
+                el.style.wordSpacing = '-0.18em';
+                el.style.fontWeight = '400';
                 if (el.classList.contains('receipt-no-rule')) {
                     el.style.borderTop = 'none';
                     el.style.borderBottom = 'none';
@@ -1177,12 +1188,12 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
 
             const fullItemsEl = document.getElementById('receiptFullItems');
             if (items.length === 0) {
-                fullItemsEl.innerHTML = `<div class="receipt-no-rule" style="color: #64748b; font-style: italic; font-size: 12px;">No items</div>`;
+                fullItemsEl.innerHTML = `<div class="receipt-no-rule font-normal" style="color: #64748b; font-style: italic; font-size: 12px; font-weight: 400;">No items</div>`;
             } else {
                 fullItemsEl.innerHTML = items.map(item => `
-                    <div class="receipt-grid-row receipt-no-rule">
-                        <span class="receipt-col-desc receipt-no-rule" style="font-weight: 400; font-size: 12px; color: #0f172a;">${escapeHtml(item.name)}</span>
-                        <span class="receipt-col-amt receipt-no-rule" style="font-weight: 500; font-size: 12px; color: #000000;">${formatEUR(item.price)}</span>
+                    <div class="receipt-grid-row receipt-no-rule font-normal">
+                        <span class="receipt-col-desc receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #0f172a;">${escapeHtml(item.name)}</span>
+                        <span class="receipt-col-amt receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #000000;">${formatEUR(item.price)}</span>
                     </div>
                 `).join('');
             }
@@ -1200,26 +1211,26 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                 const data = personTotals[p.id];
                 const tint = personBoxTints[idx % personBoxTints.length];
                 const rowsHtml = data.itemShares.length === 0
-                    ? `<div class="receipt-no-rule" style="color: #64748b; font-style: italic; font-size: 11.5px;">No items assigned</div>`
+                    ? `<div class="receipt-no-rule font-normal" style="color: #64748b; font-style: italic; font-size: 11.5px; font-weight: 400;">No items assigned</div>`
                     : data.itemShares.map(share => {
                         const origNote = share.totalSplitCount > 1
-                            ? ` <span class="receipt-no-rule" style="color: #475569; font-size: 11px; font-weight: 400;">(1/${share.totalSplitCount} of ${formatEUR(share.originalPrice)})</span>`
+                            ? ` <span class="receipt-no-rule font-normal" style="color: #475569; font-size: 11px; font-weight: 400;">(1/${share.totalSplitCount} of ${formatEUR(share.originalPrice)})</span>`
                             : '';
                         return `
-                            <div class="receipt-grid-row receipt-no-rule">
-                                <span class="receipt-col-desc receipt-no-rule" style="font-weight: 400; font-size: 12px; color: #0f172a;">${escapeHtml(share.name)}${origNote}</span>
-                                <span class="receipt-col-amt receipt-no-rule" style="font-weight: 500; font-size: 12px; color: #000000;">${formatEUR(share.shareCost)}</span>
+                            <div class="receipt-grid-row receipt-no-rule font-normal">
+                                <span class="receipt-col-desc receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #0f172a;">${escapeHtml(share.name)}${origNote}</span>
+                                <span class="receipt-col-amt receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #000000;">${formatEUR(share.shareCost)}</span>
                             </div>
                         `;
                     }).join('');
 
                 return `
-                    <div class="receipt-section-box" style="background-color: ${tint.bg}; border: 1px solid ${tint.border};">
-                        <div class="receipt-grid-row receipt-no-rule" style="margin-bottom: 5px;">
-                            <span class="receipt-col-desc receipt-no-rule" style="font-weight: 700; font-size: 12px; color: #000000;">${escapeHtml(p.name)}</span>
-                            <span class="receipt-col-amt receipt-no-rule" style="font-weight: 700; font-size: 12px; color: #000000;">${formatEUR(data.totalOwed)}</span>
+                    <div class="receipt-section-box font-normal" style="background-color: ${tint.bg}; border: 1px solid ${tint.border};">
+                        <div class="receipt-grid-row receipt-no-rule font-normal" style="margin-bottom: 5px;">
+                            <span class="receipt-col-desc receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #000000;">${escapeHtml(p.name)}</span>
+                            <span class="receipt-col-amt receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #000000;">${formatEUR(data.totalOwed)}</span>
                         </div>
-                        <div class="receipt-no-rule" style="display: flex; flex-direction: column; gap: 3px; padding-left: 8px;">
+                        <div class="receipt-no-rule font-normal" style="display: flex; flex-direction: column; gap: 3px; padding-left: 8px;">
                             ${rowsHtml}
                         </div>
                     </div>
@@ -1233,9 +1244,9 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
             if (unassignedItemsCount > 0 && unassignedItems.length > 0) {
                 unassignedSecEl.classList.remove('hidden');
                 unassignedItemsEl.innerHTML = unassignedItems.map(item => `
-                    <div class="receipt-grid-row receipt-no-rule">
-                        <span class="receipt-col-desc receipt-no-rule" style="font-weight: 400; font-size: 12px; color: #0f172a;">${escapeHtml(item.name)}</span>
-                        <span class="receipt-col-amt receipt-no-rule" style="font-weight: 500; font-size: 12px; color: #000000;">${formatEUR(item.price)}</span>
+                    <div class="receipt-grid-row receipt-no-rule font-normal">
+                        <span class="receipt-col-desc receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #0f172a;">${escapeHtml(item.name)}</span>
+                        <span class="receipt-col-amt receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #000000;">${formatEUR(item.price)}</span>
                     </div>
                 `).join('');
             } else {
@@ -1280,7 +1291,7 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                 summary += `UNASSIGNED ENTRIES TOTAL: ${formatEUR(unassignedCost)}\n\n`;
             }
 
-            summary += `CALCULATED WITH BILL SPLITTER`;
+            summary += `Mr.Bhone's Bill Splitter`;
 
             document.getElementById('summaryPreviewBox').textContent = summary;
         }
