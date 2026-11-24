@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Splitter</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        person1: { bg: 'bg-blue-600', text: 'text-blue-400', border: 'border-blue-500/40', bgSoft: 'bg-blue-950/30' },
+                        person2: { bg: 'bg-pink-600', text: 'text-pink-400', border: 'border-pink-500/40', bgSoft: 'bg-pink-950/30' },
+                        person3: { bg: 'bg-emerald-600', text: 'text-emerald-400', border: 'border-emerald-500/40', bgSoft: 'bg-emerald-950/30' },
+                        person4: { bg: 'bg-amber-600', text: 'text-amber-400', border: 'border-amber-500/40', bgSoft: 'bg-amber-950/30' }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2canvas for Receipt PNG Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Formal business receipt styling with unclipped line-height and wrapping */
+        #receiptCard,
+        .receipt-export-clone {
+            background-color: #ffffff;
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
+            line-height: 1.3;
+            overflow: visible;
+            text-decoration: none;
+        }
+        #receiptCard *,
+        .receipt-export-clone * {
+            line-height: 1.3;
+            overflow: visible;
+            text-overflow: clip;
+            text-decoration: none;
+        }
+        #receiptCard .receipt-no-rule,
+        .receipt-export-clone .receipt-no-rule {
+            border-top: none !important;
+            border-bottom: none !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-16">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-30 shadow-md">
+        <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
+                    <i class="fa-solid fa-calculator text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                        Bill Splitter
+                    </h1>
+                    <p class="text-xs text-slate-400">Easy itemized bill calculator for 2 to 4 people</p>
+                </div>
+            </div>
+
+            <!-- Header Action Controls -->
+            <div class="flex items-center gap-2">
+                <button id="btnClearItems" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-trash-can text-red-400"></i> Clear All Items
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 mt-6 space-y-6">
+
+        <!-- 1. People Management Panel (2 to 4 People) -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <div>
+                    <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-users text-cyan-400"></i> People (Max 4)
+                    </h2>
+                    <p class="text-xs text-slate-400">Edit names or add up to 4 people to split the bill</p>
+                </div>
+                <button id="btnAddPerson" class="self-start sm:self-auto px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold shadow transition flex items-center gap-1.5 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-user-plus"></i> Add Person
+                </button>
+            </div>
+
+            <!-- Dynamic People Cards Container -->
+            <div id="peopleContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                <!-- People cards generated dynamically via JS -->
+            </div>
+        </section>
+
+        <!-- Main Workspace: Add Item + Items List + Summary -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- Left Column: Add Item & Item Selector List (7 cols) -->
+            <section class="lg:col-span-7 space-y-5">
+
+                <!-- Add Item Card (Single + Bulk Paste Tabs) -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                            <i class="fa-solid fa-cart-plus text-cyan-400"></i> Add Items or Discounts
+                        </h3>
+                        <!-- Mode Switcher -->
+                        <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-semibold">
+                            <button type="button" id="tabSingleBtn" class="px-3 py-1 rounded-lg bg-cyan-600 text-white transition">
+                                Single Item
+                            </button>
+                            <button type="button" id="tabBulkBtn" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-paste text-[11px]"></i> Paste Text List
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Mode 1: Single Item Form -->
+                    <form id="addItemForm" class="flex flex-col sm:flex-row gap-2.5">
+                        <div class="flex-1">
+                            <input type="text" id="itemNameInput" required placeholder="Description (e.g. Pizza, Discount)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+                        </div>
+                        <div class="w-full sm:w-36 relative">
+                            <span class="absolute left-3 top-2.5 text-slate-400 text-sm font-semibold">€</span>
+                            <input type="text" inputmode="text" id="itemPriceInput" required placeholder="0.00 or -1.50" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-7 pr-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition font-mono">
+                        </div>
+                        <button type="submit" class="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl text-sm shadow transition flex items-center justify-center gap-2 shrink-0 active:scale-95">
+                            <i class="fa-solid fa-plus"></i> Add
+                        </button>
+                    </form>
+
+                    <!-- Mode 2: Bulk Text Paste Form -->
+                    <div id="bulkPasteContainer" class="hidden space-y-3">
+                        <textarea id="bulkPasteInput" rows="5" placeholder="Paste your list here (one item or discount per line), e.g.:
+Herren-Jogginghose 8,00
+Langarmshirt 5,00
+Nachlass -1,50
+Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition font-mono leading-relaxed"></textarea>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <p class="text-[11px] text-slate-400">
+                                Use <code class="text-slate-300">-</code> before a price (e.g. <code class="text-emerald-400">-1,50</code>) to add discounts.
+                            </p>
+                            <button type="button" id="btnParseBulk" class="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl text-sm shadow transition flex items-center justify-center gap-2 shrink-0 active:scale-95">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Parse & Add Items
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items List Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+                    <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-list-ul text-cyan-400"></i> Bill Items
+                            <span id="itemCountBadge" class="text-xs bg-slate-800 text-slate-300 font-semibold px-2.5 py-0.5 rounded-full">0 items</span>
+                        </h3>
+                        <div class="text-xs text-slate-400">
+                            Total: <span id="listTotalDisplay" class="font-bold text-slate-200">€0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- List Container -->
+                    <div id="itemsContainer" class="space-y-3 min-h-[160px] max-h-[550px] overflow-y-auto pr-1">
+                        <!-- Rendered Items or Empty State -->
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Right Column: Live Summary, Share Breakdown & Receipt Card (5 cols) -->
+            <section class="lg:col-span-5 space-y-5">
+
+                <!-- Overall Bill Status Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-base font-bold text-slate-200 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-cyan-400"></i> Bill Summary
+                        </h2>
+                        <span id="unassignedStatusBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            All Items Split
+                        </span>
+                    </div>
+
+                    <!-- Grand Totals Overview Box -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 mb-4 space-y-2">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-400">Overall Receipt Total</span>
+                            <span id="summaryGrandTotal" class="text-xl font-extrabold text-white font-mono">€0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs pt-2 border-t border-slate-900 text-slate-400">
+                            <span>Assigned Total: <span id="summaryAssignedTotal" class="text-slate-200 font-semibold font-mono">€0.00</span></span>
+                            <span>Unassigned: <span id="summaryUnassignedTotal" class="text-amber-400 font-semibold font-mono">€0.00</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Warning banner if unassigned items exist -->
+                    <div id="unassignedWarning" class="hidden mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-300 flex items-start gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm mt-0.5 shrink-0"></i>
+                        <span>Some items or discounts are not assigned to anyone yet. Select people on all entries to complete the split.</span>
+                    </div>
+
+                    <!-- Live Breakdown Cards per Person -->
+                    <div id="personBreakdownsContainer" class="space-y-2.5">
+                        <!-- Dynamic per-person summary cards -->
+                    </div>
+                </div>
+
+                <!-- Export & Copy Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                            <i class="fa-solid fa-share-nodes text-cyan-400"></i> Share Breakdown
+                        </h3>
+                        <button id="btnCopySummary" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5 active:scale-95">
+                            <i class="fa-solid fa-copy"></i> Copy Summary
+                        </button>
+                    </div>
+                    <div id="summaryPreviewBox" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-300 leading-relaxed whitespace-pre-wrap max-h-64 overflow-y-auto">
+                        <!-- Dynamic summary text preview -->
+                    </div>
+                </div>
+
+                <!-- Structured Receipt View & Image Download Section -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                            <i class="fa-solid fa-receipt text-cyan-400"></i> Receipt View
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="btnToggleReceipt" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 active:scale-95">
+                                <i class="fa-solid fa-file-invoice"></i> <span id="toggleReceiptLabel">Show Receipt</span>
+                            </button>
+                            <button type="button" id="btnDownloadReceiptPng" class="hidden px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5 active:scale-95">
+                                <i class="fa-solid fa-download"></i> Save PNG
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Editable Receipt Name Input -->
+                    <div class="space-y-1">
+                        <label for="receiptTitleInput" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                            Receipt Title / Name
+                        </label>
+                        <input type="text" id="receiptTitleInput" maxlength="60" placeholder="BILL SPLIT RECEIPT" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-semibold uppercase tracking-wide text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+                    </div>
+
+                    <!-- Structured Receipt Card (Formal Business Style) -->
+                    <div id="receiptWrapper" class="hidden pt-1">
+                        <div id="receiptCard" class="rounded-lg p-3.5 font-mono text-[11px] space-y-2 no-underline">
+                            <div class="text-center pb-1.5 receipt-no-rule no-underline">
+                                <div id="receiptTitleDisplay" class="text-xs font-extrabold tracking-wider uppercase text-slate-950 break-words no-underline">BILL SPLIT RECEIPT</div>
+                                <div id="receiptTimestamp" class="text-[10px] text-slate-600 mt-0.5 no-underline"></div>
+                            </div>
+
+                            <!-- Unsplitted Full Item List -->
+                            <div class="space-y-1 no-underline">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-900 bg-slate-100 px-2 py-0.5 receipt-no-rule no-underline">
+                                    FULL ITEM LIST
+                                </div>
+                                <div id="receiptFullItems" class="px-0.5 no-underline"></div>
+                                <div class="flex justify-between items-center gap-2 pt-1 font-bold text-xs text-slate-950 receipt-no-rule no-underline">
+                                    <span class="font-bold uppercase no-underline">TOTAL</span>
+                                    <span id="receiptGrandTotal" class="font-extrabold text-right no-underline">€0.00</span>
+                                </div>
+                            </div>
+
+                            <!-- Per-Person Breakdown -->
+                            <div class="pt-1.5 space-y-1.5 receipt-no-rule no-underline">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-900 bg-slate-100 px-2 py-0.5 receipt-no-rule no-underline">
+                                    PER-PERSON BREAKDOWN
+                                </div>
+                                <div id="receiptPeopleSections" class="space-y-1.5 px-0.5 no-underline"></div>
+                            </div>
+
+                            <div class="pt-1 text-center text-[9px] uppercase tracking-wider text-slate-600 receipt-no-rule no-underline">
+                                To To Bhone's • BILL SPLITTER
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl font-medium text-sm transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 z-50">
+        <i class="fa-solid fa-circle-check"></i> <span id="toastMessage">Summary copied to clipboard!</span>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        const STORAGE_KEY = 'bill_splitter_v1';
+        const DEFAULT_RECEIPT_TITLE = 'BILL SPLIT RECEIPT';
+
+        const PERSON_COLORS = [
+            { name: 'blue', bg: 'bg-blue-600', text: 'text-blue-400', border: 'border-blue-500/40', bgSoft: 'bg-blue-950/30', btnBorder: 'border-blue-500/30' },
+            { name: 'pink', bg: 'bg-pink-600', text: 'text-pink-400', border: 'border-pink-500/40', bgSoft: 'bg-pink-950/30', btnBorder: 'border-pink-500/30' },
+            { name: 'emerald', bg: 'bg-emerald-600', text: 'text-emerald-400', border: 'border-emerald-500/40', bgSoft: 'bg-emerald-950/30', btnBorder: 'border-emerald-500/30' },
+            { name: 'amber', bg: 'bg-amber-600', text: 'text-amber-400', border: 'border-amber-500/40', bgSoft: 'bg-amber-950/30', btnBorder: 'border-amber-500/30' }
+        ];
+
+        let people = [
+            { id: 1, name: 'Person 1', colorIdx: 0 },
+            { id: 2, name: 'Person 2', colorIdx: 1 }
+        ];
+        let items = [];
+        let receiptTitle = DEFAULT_RECEIPT_TITLE;
+        let receiptVisible = false;
+
+        function normalizeDashes(str) {
+            return str.replace(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, '-');
+        }
+
+        function parseFlexiblePrice(rawStr) {
+            if (!rawStr) return NaN;
+            const cleaned = normalizeDashes(rawStr)
+                .replace(/[€$£\s]/g, '')
+                .replace(',', '.');
+            return parseFloat(cleaned);
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ people, items, receiptTitle }));
+            } catch (e) {
+                console.error('Failed to save state:', e);
+            }
+        }
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) return;
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed.people) && parsed.people.length >= 2) {
+                    people = parsed.people;
+                }
+                if (Array.isArray(parsed.items)) {
+                    items = parsed.items;
+                }
+                if (typeof parsed.receiptTitle === 'string' && parsed.receiptTitle.trim()) {
+                    receiptTitle = parsed.receiptTitle.trim().toUpperCase();
+                }
+            } catch (e) {
+                console.error('Failed to load saved state:', e);
+            }
+        }
+
+        function formatEUR(amount) {
+            const rounded = Math.round((amount + Number.EPSILON) * 100) / 100;
+            if (rounded < 0) {
+                return '-€' + Math.abs(rounded).toFixed(2);
+            }
+            return '€' + rounded.toFixed(2);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            const titleInput = document.getElementById('receiptTitleInput');
+            titleInput.value = receiptTitle;
+            setupEventListeners();
+            renderPeople();
+            renderItems();
+            updateCalculations();
+        });
+
+        function setupEventListeners() {
+            const tabSingleBtn = document.getElementById('tabSingleBtn');
+            const tabBulkBtn = document.getElementById('tabBulkBtn');
+            const addItemForm = document.getElementById('addItemForm');
+            const bulkPasteContainer = document.getElementById('bulkPasteContainer');
+
+            tabSingleBtn.addEventListener('click', () => {
+                tabSingleBtn.className = 'px-3 py-1 rounded-lg bg-cyan-600 text-white transition';
+                tabBulkBtn.className = 'px-3 py-1 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5';
+                addItemForm.classList.remove('hidden');
+                bulkPasteContainer.classList.add('hidden');
+            });
+
+            tabBulkBtn.addEventListener('click', () => {
+                tabBulkBtn.className = 'px-3 py-1 rounded-lg bg-cyan-600 text-white transition flex items-center gap-1.5';
+                tabSingleBtn.className = 'px-3 py-1 rounded-lg text-slate-400 hover:text-white transition';
+                bulkPasteContainer.classList.remove('hidden');
+                addItemForm.classList.add('hidden');
+                document.getElementById('bulkPasteInput').focus();
+            });
+
+            document.getElementById('btnParseBulk').addEventListener('click', handleBulkPaste);
+            document.getElementById('btnAddPerson').addEventListener('click', addPerson);
+
+            // Receipt Title live edit & persistence
+            const titleInput = document.getElementById('receiptTitleInput');
+            titleInput.addEventListener('input', () => {
+                receiptTitle = titleInput.value.toUpperCase();
+                saveState();
+                updateReceiptTitleDisplay();
+            });
+            titleInput.addEventListener('blur', () => {
+                const cleaned = titleInput.value.trim().toUpperCase() || DEFAULT_RECEIPT_TITLE;
+                receiptTitle = cleaned;
+                titleInput.value = cleaned;
+                saveState();
+                updateReceiptTitleDisplay();
+            });
+
+            addItemForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const nameInput = document.getElementById('itemNameInput');
+                const priceInput = document.getElementById('itemPriceInput');
+
+                const name = nameInput.value.trim();
+                const price = parseFlexiblePrice(priceInput.value);
+
+                if (name && !isNaN(price) && price !== 0) {
+                    items.push({
+                        id: Date.now() + Math.random(),
+                        name: name,
+                        price: price,
+                        selectedPeople: []
+                    });
+
+                    nameInput.value = '';
+                    priceInput.value = '';
+                    nameInput.focus();
+
+                    saveState();
+                    renderItems();
+                    updateCalculations();
+                } else {
+                    showToast('Enter a valid price (e.g. 5.00 or -1.50)', true);
+                }
+            });
+
+            document.getElementById('btnClearItems').addEventListener('click', () => {
+                if (items.length === 0) return;
+                items = [];
+                saveState();
+                renderItems();
+                updateCalculations();
+                showToast('All items cleared');
+            });
+
+            document.getElementById('btnCopySummary').addEventListener('click', copySummaryToClipboard);
+            document.getElementById('btnToggleReceipt').addEventListener('click', toggleReceiptView);
+            document.getElementById('btnDownloadReceiptPng').addEventListener('click', downloadReceiptAsPng);
+        }
+
+        function updateReceiptTitleDisplay() {
+            const activeTitle = (receiptTitle || DEFAULT_RECEIPT_TITLE).toUpperCase();
+            const displayEl = document.getElementById('receiptTitleDisplay');
+            if (displayEl) {
+                displayEl.textContent = activeTitle;
+            }
+        }
+
+        function toggleReceiptView() {
+            receiptVisible = !receiptVisible;
+            const wrapper = document.getElementById('receiptWrapper');
+            const btnPng = document.getElementById('btnDownloadReceiptPng');
+            const label = document.getElementById('toggleReceiptLabel');
+
+            if (receiptVisible) {
+                wrapper.classList.remove('hidden');
+                btnPng.classList.remove('hidden');
+                label.textContent = 'Hide Receipt';
+                updateCalculations();
+            } else {
+                wrapper.classList.add('hidden');
+                btnPng.classList.add('hidden');
+                label.textContent = 'Show Receipt';
+            }
+        }
+
+        async function downloadReceiptAsPng() {
+            if (!receiptVisible) {
+                toggleReceiptView();
+            }
+            const sourceCard = document.getElementById('receiptCard');
+            if (!sourceCard || typeof html2canvas === 'undefined') {
+                showToast('PNG generator unavailable', true);
+                return;
+            }
+
+            // Build a dedicated offscreen clone with unrestricted height and wrapping
+            // so html2canvas never clips vertical half-lines or truncates item names.
+            const exportHost = document.createElement('div');
+            exportHost.style.position = 'fixed';
+            exportHost.style.left = '-9999px';
+            exportHost.style.top = '0';
+            exportHost.style.width = '440px';
+            exportHost.style.zIndex = '-1';
+            exportHost.style.pointerEvents = 'none';
+
+            const clone = sourceCard.cloneNode(true);
+            clone.id = '';
+            clone.classList.add('receipt-export-clone');
+            clone.style.width = '420px';
+            clone.style.maxWidth = 'none';
+            clone.style.height = 'auto';
+            clone.style.maxHeight = 'none';
+            clone.style.overflow = 'visible';
+            clone.style.backgroundColor = '#ffffff';
+            clone.style.color = '#0f172a';
+            clone.style.padding = '16px';
+
+            clone.querySelectorAll('*').forEach(el => {
+                el.style.overflow = 'visible';
+                el.style.maxHeight = 'none';
+                el.style.textOverflow = 'clip';
+                el.style.whiteSpace = 'normal';
+                el.style.lineHeight = '1.32';
+                el.style.textDecoration = 'none';
+                el.style.borderTop = 'none';
+                el.style.borderBottom = 'none';
+            });
+            clone.style.border = '1px solid #cbd5e1';
+
+            exportHost.appendChild(clone);
+            document.body.appendChild(exportHost);
+
+            try {
+                showToast('Generating formal receipt PNG...');
+                const canvas = await html2canvas(clone, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    useCORS: true,
+                    width: clone.offsetWidth,
+                    height: clone.scrollHeight,
+                    windowWidth: clone.offsetWidth,
+                    windowHeight: clone.scrollHeight
+                });
+
+                const safeSlug = (receiptTitle || DEFAULT_RECEIPT_TITLE)
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-|-$/g, '') || 'bill-split-receipt';
+
+                const link = document.createElement('a');
+                link.download = `${safeSlug}-${new Date().toISOString().slice(0, 10)}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToast('Receipt PNG downloaded!');
+            } catch (err) {
+                console.error('PNG export failed:', err);
+                showToast('Could not export PNG — you can screenshot the receipt', true);
+            } finally {
+                document.body.removeChild(exportHost);
+            }
+        }
+
+        function handleBulkPaste() {
+            const textarea = document.getElementById('bulkPasteInput');
+            const rawText = textarea.value;
+            if (!rawText.trim()) return;
+
+            const lines = rawText.split(/\r?\n/);
+            const ignoredKeywords = /^(ursprünglicher preis|summe|total|subtotal|bar|rückgeld|mwst|ust|kasse|zeit|verkauft)/i;
+            let addedCount = 0;
+
+            lines.forEach((rawLine, idx) => {
+                const line = normalizeDashes(rawLine).trim();
+                if (!line || ignoredKeywords.test(line)) return;
+
+                const priceMatch = line.match(/(?:(-\s*)?[€$£]\s*|(-\s*))(\d+(?:[.,]\d{1,2})?)\s*(?:[€$£]|[A-Za-z])?\s*$/);
+                if (!priceMatch) return;
+
+                const isNegative = Boolean(priceMatch[1] || priceMatch[2]);
+                let numericPrice = parseFloat(priceMatch[3].replace(',', '.'));
+                if (isNaN(numericPrice) || numericPrice === 0) return;
+                if (isNegative) numericPrice = -numericPrice;
+
+                let namePart = line.slice(0, priceMatch.index).trim();
+                namePart = namePart.replace(/^\d{6,}\s+/, '');
+                namePart = namePart.replace(/[-:•|€$£]+$/g, '').trim();
+
+                if (!namePart) {
+                    namePart = numericPrice < 0 ? 'Discount' : `Item ${items.length + addedCount + 1}`;
+                }
+
+                items.push({
+                    id: Date.now() + idx + Math.random(),
+                    name: namePart,
+                    price: numericPrice,
+                    selectedPeople: []
+                });
+                addedCount++;
+            });
+
+            if (addedCount > 0) {
+                textarea.value = '';
+                saveState();
+                renderItems();
+                updateCalculations();
+                showToast(`Added ${addedCount} entr${addedCount === 1 ? 'y' : 'ies'} from text!`);
+            } else {
+                showToast('No valid items or discounts found', true);
+            }
+        }
+
+        function addPerson() {
+            if (people.length >= 4) return;
+
+            const newId = people.length > 0 ? Math.max(...people.map(p => p.id)) + 1 : 1;
+            const usedColors = people.map(p => p.colorIdx);
+            const newColorIdx = [0, 1, 2, 3].find(idx => !usedColors.includes(idx)) ?? 0;
+
+            people.push({
+                id: newId,
+                name: `Person ${people.length + 1}`,
+                colorIdx: newColorIdx
+            });
+
+            saveState();
+            renderPeople();
+            renderItems();
+            updateCalculations();
+        }
+
+        function removePerson(personId) {
+            if (people.length <= 2) return;
+
+            people = people.filter(p => p.id !== personId);
+            items.forEach(item => {
+                item.selectedPeople = item.selectedPeople.filter(id => id !== personId);
+            });
+
+            saveState();
+            renderPeople();
+            renderItems();
+            updateCalculations();
+        }
+
+        function updatePersonName(personId, newName) {
+            const p = people.find(item => item.id === personId);
+            if (p) {
+                p.name = newName.trim() || `Person ${personId}`;
+                saveState();
+                renderItems();
+                updateCalculations();
+            }
+        }
+
+        function renderPeople() {
+            const container = document.getElementById('peopleContainer');
+            container.innerHTML = '';
+
+            people.forEach(p => {
+                const color = PERSON_COLORS[p.colorIdx];
+                const card = document.createElement('div');
+                card.className = `p-3 rounded-xl border ${color.border} ${color.bgSoft} flex items-center justify-between gap-2 transition`;
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                        <span class="w-3 h-3 rounded-full ${color.bg} shrink-0"></span>
+                        <input type="text" value="${escapeHtml(p.name)}" 
+                            onchange="updatePersonName(${p.id}, this.value)"
+                            onblur="updatePersonName(${p.id}, this.value)"
+                            class="bg-transparent font-semibold text-sm text-white focus:outline-none focus:border-b border-slate-500 w-full truncate" 
+                            placeholder="Person Name" />
+                    </div>
+                    ${people.length > 2 ? `
+                        <button onclick="removePerson(${p.id})" title="Remove Person" class="text-slate-500 hover:text-red-400 p-1 transition">
+                            <i class="fa-solid fa-xmark text-xs"></i>
+                        </button>
+                    ` : ''}
+                `;
+                container.appendChild(card);
+            });
+
+            const btnAdd = document.getElementById('btnAddPerson');
+            btnAdd.disabled = people.length >= 4;
+            if (people.length >= 4) {
+                btnAdd.classList.add('opacity-40', 'cursor-not-allowed');
+            } else {
+                btnAdd.classList.remove('opacity-40', 'cursor-not-allowed');
+            }
+        }
+
+        function renderItems() {
+            const container = document.getElementById('itemsContainer');
+            const itemCountBadge = document.getElementById('itemCountBadge');
+            const listTotalDisplay = document.getElementById('listTotalDisplay');
+
+            container.innerHTML = '';
+            itemCountBadge.textContent = `${items.length} item${items.length === 1 ? '' : 's'}`;
+
+            const grandTotal = items.reduce((sum, item) => sum + item.price, 0);
+            listTotalDisplay.textContent = formatEUR(grandTotal);
+
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 px-4 text-slate-500 border border-dashed border-slate-800 rounded-xl bg-slate-950/40">
+                        <i class="fa-solid fa-receipt text-3xl mb-2 text-slate-600"></i>
+                        <p class="text-sm font-medium text-slate-400">No items in the list yet.</p>
+                        <p class="text-xs text-slate-500 mt-1">Add items or negative discounts (e.g. -1.50) above.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+                const isAssigned = item.selectedPeople.length > 0;
+                const isDiscount = item.price < 0;
+                const splitCost = isAssigned ? item.price / item.selectedPeople.length : item.price;
+
+                let borderStyle = 'border-amber-500/40 bg-amber-950/10';
+                if (isAssigned) {
+                    borderStyle = isDiscount
+                        ? 'border-emerald-500/30 bg-emerald-950/10 hover:border-emerald-500/50'
+                        : 'border-slate-800 bg-slate-950/60 hover:border-slate-700';
+                }
+
+                card.className = `border ${borderStyle} rounded-xl p-3.5 transition space-y-3`;
+
+                let personPillsHtml = '';
+                people.forEach(p => {
+                    const color = PERSON_COLORS[p.colorIdx];
+                    const isSelected = item.selectedPeople.includes(p.id);
+
+                    personPillsHtml += `
+                        <button onclick="toggleItemPerson(${item.id}, ${p.id})" 
+                            class="px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 ${isSelected ? `${color.bg} text-white shadow` : `bg-slate-900 ${color.text} border ${color.btnBorder} hover:bg-slate-800`}">
+                            <i class="fa-solid ${isSelected ? 'fa-check' : 'fa-plus'} text-[10px]"></i>
+                            <span>${escapeHtml(p.name)}</span>
+                        </button>
+                    `;
+                });
+
+                const allSelected = people.every(p => item.selectedPeople.includes(p.id));
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-sm font-bold text-white truncate">${escapeHtml(item.name)}</h4>
+                                ${isDiscount ? `<span class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">Discount</span>` : ''}
+                            </div>
+                            <div class="text-xs text-slate-400 mt-0.5">
+                                ${isAssigned ? `
+                                    <span class="text-slate-300 font-medium">Split by ${item.selectedPeople.length} (${formatEUR(splitCost)} each)</span>
+                                ` : `
+                                    <span class="text-amber-400 font-medium"><i class="fa-solid fa-circle-exclamation text-[10px] mr-1"></i> Not assigned</span>
+                                `}
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 shrink-0">
+                            <span class="text-base font-extrabold ${isDiscount ? 'text-emerald-400' : 'text-white'} font-mono">${formatEUR(item.price)}</span>
+                            <button onclick="deleteItem(${item.id})" title="Delete Item" class="text-slate-500 hover:text-red-400 p-1.5 hover:bg-slate-800 rounded-lg transition">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-900">
+                        <span class="text-[11px] font-medium text-slate-400 mr-1">Assign:</span>
+                        ${personPillsHtml}
+                        
+                        <button onclick="toggleSplitAll(${item.id})" class="ml-auto px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[11px] font-medium transition">
+                            <i class="fa-solid fa-arrows-split-up-and-left text-[10px] mr-1"></i> ${allSelected ? 'Clear' : 'Split All'}
+                        </button>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function toggleItemPerson(itemId, personId) {
+            const item = items.find(i => i.id === itemId);
+            if (!item) return;
+
+            if (item.selectedPeople.includes(personId)) {
+                item.selectedPeople = item.selectedPeople.filter(id => id !== personId);
+            } else {
+                item.selectedPeople.push(personId);
+            }
+
+            saveState();
+            renderItems();
+            updateCalculations();
+        }
+
+        function toggleSplitAll(itemId) {
+            const item = items.find(i => i.id === itemId);
+            if (!item) return;
+
+            const allPersonIds = people.map(p => p.id);
+            const allSelected = allPersonIds.every(id => item.selectedPeople.includes(id));
+
+            item.selectedPeople = allSelected ? [] : [...allPersonIds];
+
+            saveState();
+            renderItems();
+            updateCalculations();
+        }
+
+        function deleteItem(itemId) {
+            items = items.filter(i => i.id !== itemId);
+            saveState();
+            renderItems();
+            updateCalculations();
+        }
+
+        function updateCalculations() {
+            const grandTotal = items.reduce((sum, item) => sum + item.price, 0);
+            let totalAssignedCost = 0;
+            let unassignedItemsCount = 0;
+            let unassignedCost = 0;
+
+            const personTotals = {};
+            people.forEach(p => {
+                personTotals[p.id] = {
+                    person: p,
+                    totalOwed: 0,
+                    itemShares: []
+                };
+            });
+
+            items.forEach(item => {
+                if (item.selectedPeople.length === 0) {
+                    unassignedItemsCount++;
+                    unassignedCost += item.price;
+                } else {
+                    totalAssignedCost += item.price;
+                    const share = item.price / item.selectedPeople.length;
+                    item.selectedPeople.forEach(personId => {
+                        if (personTotals[personId]) {
+                            personTotals[personId].totalOwed += share;
+                            personTotals[personId].itemShares.push({
+                                name: item.name,
+                                originalPrice: item.price,
+                                shareCost: share,
+                                totalSplitCount: item.selectedPeople.length
+                            });
+                        }
+                    });
+                }
+            });
+
+            document.getElementById('summaryGrandTotal').textContent = formatEUR(grandTotal);
+            document.getElementById('summaryAssignedTotal').textContent = formatEUR(totalAssignedCost);
+            document.getElementById('summaryUnassignedTotal').textContent = formatEUR(unassignedCost);
+
+            const warningEl = document.getElementById('unassignedWarning');
+            const statusBadge = document.getElementById('unassignedStatusBadge');
+
+            if (unassignedItemsCount > 0) {
+                warningEl.classList.remove('hidden');
+                statusBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                statusBadge.textContent = `${unassignedItemsCount} Unassigned`;
+            } else {
+                warningEl.classList.add('hidden');
+                statusBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                statusBadge.textContent = 'All Items Split';
+            }
+
+            const breakdownsContainer = document.getElementById('personBreakdownsContainer');
+            breakdownsContainer.innerHTML = '';
+
+            people.forEach(p => {
+                const data = personTotals[p.id];
+                const color = PERSON_COLORS[p.colorIdx];
+
+                const pCard = document.createElement('div');
+                pCard.className = `p-3.5 rounded-xl border ${color.border} ${color.bgSoft} transition space-y-2`;
+
+                let itemizedHtml = '';
+                if (data.itemShares.length === 0) {
+                    itemizedHtml = `<p class="text-xs text-slate-500 italic">No items assigned yet</p>`;
+                } else {
+                    itemizedHtml = `<ul class="space-y-1 text-xs">`;
+                    data.itemShares.forEach(share => {
+                        const isDiscountShare = share.shareCost < 0;
+                        const splitMeta = share.totalSplitCount > 1
+                            ? ` <span class="text-[10px] text-slate-400">(1/${share.totalSplitCount} of ${formatEUR(share.originalPrice)})</span>`
+                            : '';
+                        itemizedHtml += `
+                            <li class="flex justify-between items-center ${isDiscountShare ? 'text-emerald-300' : 'text-slate-300'}">
+                                <span class="truncate pr-2">• ${escapeHtml(share.name)}${splitMeta}</span>
+                                <span class="font-mono ${isDiscountShare ? 'text-emerald-400' : 'text-slate-200'}">${formatEUR(share.shareCost)}</span>
+                            </li>
+                        `;
+                    });
+                    itemizedHtml += `</ul>`;
+                }
+
+                pCard.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full ${color.bg}"></span>
+                            <span class="font-bold text-sm text-white">${escapeHtml(p.name)}</span>
+                        </div>
+                        <span class="text-base font-extrabold ${color.text} font-mono">${formatEUR(data.totalOwed)}</span>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800/80">
+                        ${itemizedHtml}
+                    </div>
+                `;
+
+                breakdownsContainer.appendChild(pCard);
+            });
+
+            generateSummaryText(grandTotal, personTotals, unassignedItemsCount, unassignedCost);
+            renderReceiptCard(grandTotal, personTotals);
+        }
+
+        function renderReceiptCard(grandTotal, personTotals) {
+            updateReceiptTitleDisplay();
+            const tsEl = document.getElementById('receiptTimestamp');
+            tsEl.textContent = new Date().toLocaleString();
+
+            const fullItemsEl = document.getElementById('receiptFullItems');
+            if (items.length === 0) {
+                fullItemsEl.innerHTML = `<div class="text-slate-500 italic py-0.5 no-underline">No items</div>`;
+            } else {
+                fullItemsEl.innerHTML = items.map(item => `
+                    <div class="flex justify-between items-baseline gap-2 py-0.5 no-underline">
+                        <span class="font-normal text-slate-900 break-words flex-1 no-underline">${escapeHtml(item.name)}</span>
+                        <span class="font-bold text-slate-950 shrink-0 text-right no-underline">${formatEUR(item.price)}</span>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('receiptGrandTotal').textContent = formatEUR(grandTotal);
+
+            const peopleSecEl = document.getElementById('receiptPeopleSections');
+            peopleSecEl.innerHTML = people.map(p => {
+                const data = personTotals[p.id];
+                const personHeading = p.name.toUpperCase();
+                const rowsHtml = data.itemShares.length === 0
+                    ? `<div class="text-slate-500 italic py-0.5 pl-1.5 no-underline">No items assigned</div>`
+                    : data.itemShares.map(share => {
+                        const origNote = share.totalSplitCount > 1
+                            ? ` <span class="text-slate-500 text-[10px] no-underline">(${share.totalSplitCount}x from ${formatEUR(share.originalPrice)})</span>`
+                            : '';
+                        return `
+                            <div class="flex justify-between items-baseline gap-2 py-0.5 pl-1.5 no-underline">
+                                <span class="font-normal text-slate-800 break-words flex-1 no-underline">${escapeHtml(share.name)}${origNote}</span>
+                                <span class="font-semibold text-slate-950 shrink-0 text-right no-underline">${formatEUR(share.shareCost)}</span>
+                            </div>
+                        `;
+                    }).join('');
+
+                return `
+                    <div class="space-y-0.5 bg-slate-50 px-2 py-1.5 rounded border border-slate-200 no-underline">
+                        <div class="flex justify-between items-center gap-2 pb-0.5 font-bold text-slate-950 receipt-no-rule no-underline">
+                            <span class="font-bold uppercase break-words flex-1 no-underline">${escapeHtml(personHeading)}</span>
+                            <span class="font-extrabold shrink-0 text-right no-underline">${formatEUR(data.totalOwed)}</span>
+                        </div>
+                        <div class="space-y-0.5 no-underline">
+                            ${rowsHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function generateSummaryText(grandTotal, personTotals, unassignedItemsCount, unassignedCost) {
+            const activeTitle = (receiptTitle || DEFAULT_RECEIPT_TITLE).toUpperCase();
+            let summary = `${activeTitle}\n`;
+            summary += `---------------------------------\n`;
+            summary += `FULL ITEM LIST (UNSPLITTED)\n`;
+            if (items.length > 0) {
+                items.forEach(item => {
+                    summary += `• ${item.name}: ${formatEUR(item.price)}\n`;
+                });
+            } else {
+                summary += `• No items\n`;
+            }
+            summary += `TOTAL BILL AMOUNT: ${formatEUR(grandTotal)}\n\n`;
+
+            summary += `PER-PERSON EXPENSES\n`;
+            summary += `---------------------------------\n`;
+            people.forEach(p => {
+                const data = personTotals[p.id];
+                summary += `${p.name.toUpperCase()}: ${formatEUR(data.totalOwed)}\n`;
+                if (data.itemShares.length > 0) {
+                    data.itemShares.forEach(share => {
+                        const splitInfo = share.totalSplitCount > 1
+                            ? ` (split ${share.totalSplitCount} ways from ${formatEUR(share.originalPrice)})`
+                            : '';
+                        summary += `   • ${share.name}: ${formatEUR(share.shareCost)}${splitInfo}\n`;
+                    });
+                } else {
+                    summary += `   • No items assigned\n`;
+                }
+                summary += `\n`;
+            });
+
+            if (unassignedItemsCount > 0) {
+                summary += `UNASSIGNED ENTRIES TOTAL: ${formatEUR(unassignedCost)}\n\n`;
+            }
+
+            summary += `CALCULATED WITH BILL SPLITTER`;
+
+            document.getElementById('summaryPreviewBox').textContent = summary;
+        }
+
+        function copySummaryToClipboard() {
+            const summaryText = document.getElementById('summaryPreviewBox').textContent;
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(summaryText).then(() => {
+                    showToast('Summary copied to clipboard!');
+                }).catch(() => fallbackCopy(summaryText));
+            } else {
+                fallbackCopy(summaryText);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = text;
+            tempTextArea.style.position = 'fixed';
+            tempTextArea.style.left = '-9999px';
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            try {
+                if (document.execCommand('copy')) {
+                    showToast('Summary copied to clipboard!');
+                }
+            } catch (err) {
+                console.error('Copy failed', err);
+            }
+            document.body.removeChild(tempTextArea);
+        }
+
+        function showToast(msg, isWarning = false) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = msg;
+
+            toast.className = `fixed bottom-6 right-6 ${isWarning ? 'bg-amber-600' : 'bg-emerald-600'} text-white px-4 py-3 rounded-xl shadow-2xl font-medium text-sm transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 z-50`;
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2200);
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
