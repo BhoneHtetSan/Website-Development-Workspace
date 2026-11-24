@@ -88,14 +88,14 @@
 
     <main class="max-w-6xl mx-auto px-4 mt-6 space-y-6">
 
-        <!-- 1. People Management Panel (2 to 4 People) -->
+        <!-- 1. People Management Panel (2 to 10 People) -->
         <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div>
                     <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                        <i class="fa-solid fa-users text-cyan-400"></i> People (Max 4)
+                        <i class="fa-solid fa-users text-cyan-400"></i> People (Max 10)
                     </h2>
-                    <p class="text-xs text-slate-400">Edit names or add up to 4 people to split the bill</p>
+                    <p class="text-xs text-slate-400">Edit names or add up to 10 people to split the bill</p>
                 </div>
                 <button id="btnAddPerson" class="self-start sm:self-auto px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold shadow transition flex items-center gap-1.5 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
                     <i class="fa-solid fa-user-plus"></i> Add Person
@@ -103,7 +103,7 @@
             </div>
 
             <!-- Dynamic People Cards Container -->
-            <div id="peopleContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <div id="peopleContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <!-- People cards generated dynamically via JS -->
             </div>
         </section>
@@ -289,7 +289,7 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                             </div>
 
                             <div class="pt-1 text-center text-[9px] uppercase tracking-wider text-slate-600 receipt-no-rule no-underline">
-                                To To Bhone's • BILL SPLITTER
+                                FORMAL STATEMENT • BILL SPLITTER
                             </div>
                         </div>
                     </div>
@@ -311,10 +311,16 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
         const DEFAULT_RECEIPT_TITLE = 'BILL SPLIT RECEIPT';
 
         const PERSON_COLORS = [
-            { name: 'blue', bg: 'bg-blue-600', text: 'text-blue-400', border: 'border-blue-500/40', bgSoft: 'bg-blue-950/30', btnBorder: 'border-blue-500/30' },
-            { name: 'pink', bg: 'bg-pink-600', text: 'text-pink-400', border: 'border-pink-500/40', bgSoft: 'bg-pink-950/30', btnBorder: 'border-pink-500/30' },
-            { name: 'emerald', bg: 'bg-emerald-600', text: 'text-emerald-400', border: 'border-emerald-500/40', bgSoft: 'bg-emerald-950/30', btnBorder: 'border-emerald-500/30' },
-            { name: 'amber', bg: 'bg-amber-600', text: 'text-amber-400', border: 'border-amber-500/40', bgSoft: 'bg-amber-950/30', btnBorder: 'border-amber-500/30' }
+            { name: 'blue', bg: 'bg-blue-600', text: 'text-blue-400', border: 'border-blue-500/50', bgSoft: 'bg-blue-950/35', btnBorder: 'border-blue-500/40' },
+            { name: 'rose', bg: 'bg-rose-600', text: 'text-rose-400', border: 'border-rose-500/50', bgSoft: 'bg-rose-950/35', btnBorder: 'border-rose-500/40' },
+            { name: 'emerald', bg: 'bg-emerald-600', text: 'text-emerald-400', border: 'border-emerald-500/50', bgSoft: 'bg-emerald-950/35', btnBorder: 'border-emerald-500/40' },
+            { name: 'amber', bg: 'bg-amber-500', text: 'text-amber-300', border: 'border-amber-400/50', bgSoft: 'bg-amber-950/35', btnBorder: 'border-amber-400/40' },
+            { name: 'purple', bg: 'bg-purple-600', text: 'text-purple-400', border: 'border-purple-500/50', bgSoft: 'bg-purple-950/35', btnBorder: 'border-purple-500/40' },
+            { name: 'sky', bg: 'bg-sky-500', text: 'text-sky-300', border: 'border-sky-400/50', bgSoft: 'bg-sky-950/35', btnBorder: 'border-sky-400/40' },
+            { name: 'lime', bg: 'bg-lime-600', text: 'text-lime-300', border: 'border-lime-400/50', bgSoft: 'bg-lime-950/35', btnBorder: 'border-lime-400/40' },
+            { name: 'orange', bg: 'bg-orange-600', text: 'text-orange-400', border: 'border-orange-500/50', bgSoft: 'bg-orange-950/35', btnBorder: 'border-orange-500/40' },
+            { name: 'indigo', bg: 'bg-indigo-600', text: 'text-indigo-400', border: 'border-indigo-500/50', bgSoft: 'bg-indigo-950/35', btnBorder: 'border-indigo-500/40' },
+            { name: 'fuchsia', bg: 'bg-fuchsia-600', text: 'text-fuchsia-400', border: 'border-fuchsia-500/50', bgSoft: 'bg-fuchsia-950/35', btnBorder: 'border-fuchsia-500/40' }
         ];
 
         let people = [
@@ -616,11 +622,12 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
         }
 
         function addPerson() {
-            if (people.length >= 4) return;
+            if (people.length >= 10) return;
 
             const newId = people.length > 0 ? Math.max(...people.map(p => p.id)) + 1 : 1;
             const usedColors = people.map(p => p.colorIdx);
-            const newColorIdx = [0, 1, 2, 3].find(idx => !usedColors.includes(idx)) ?? 0;
+            const allIndices = PERSON_COLORS.map((_, idx) => idx);
+            const newColorIdx = allIndices.find(idx => !usedColors.includes(idx)) ?? (people.length % PERSON_COLORS.length);
 
             people.push({
                 id: newId,
@@ -673,11 +680,11 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                         <input type="text" value="${escapeHtml(p.name)}" 
                             onchange="updatePersonName(${p.id}, this.value)"
                             onblur="updatePersonName(${p.id}, this.value)"
-                            class="bg-transparent font-semibold text-sm text-white focus:outline-none focus:border-b border-slate-500 w-full truncate" 
+                            class="bg-transparent font-semibold text-sm text-white focus:outline-none focus:border-b border-slate-500 w-full break-words whitespace-normal" 
                             placeholder="Person Name" />
                     </div>
                     ${people.length > 2 ? `
-                        <button onclick="removePerson(${p.id})" title="Remove Person" class="text-slate-500 hover:text-red-400 p-1 transition">
+                        <button onclick="removePerson(${p.id})" title="Remove Person" class="text-slate-500 hover:text-red-400 p-1 transition shrink-0">
                             <i class="fa-solid fa-xmark text-xs"></i>
                         </button>
                     ` : ''}
@@ -686,8 +693,8 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
             });
 
             const btnAdd = document.getElementById('btnAddPerson');
-            btnAdd.disabled = people.length >= 4;
-            if (people.length >= 4) {
+            btnAdd.disabled = people.length >= 10;
+            if (people.length >= 10) {
                 btnAdd.classList.add('opacity-40', 'cursor-not-allowed');
             } else {
                 btnAdd.classList.remove('opacity-40', 'cursor-not-allowed');
@@ -750,8 +757,8 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                 card.innerHTML = `
                     <div class="flex items-start justify-between gap-3">
                         <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2">
-                                <h4 class="text-sm font-bold text-white truncate">${escapeHtml(item.name)}</h4>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h4 class="text-sm font-bold text-white break-words whitespace-normal">${escapeHtml(item.name)}</h4>
                                 ${isDiscount ? `<span class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">Discount</span>` : ''}
                             </div>
                             <div class="text-xs text-slate-400 mt-0.5">
@@ -892,12 +899,12 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                     data.itemShares.forEach(share => {
                         const isDiscountShare = share.shareCost < 0;
                         const splitMeta = share.totalSplitCount > 1
-                            ? ` <span class="text-[10px] text-slate-400">(1/${share.totalSplitCount} of ${formatEUR(share.originalPrice)})</span>`
+                            ? ` <span class="text-[10px] text-slate-400 whitespace-normal">(1/${share.totalSplitCount} of ${formatEUR(share.originalPrice)})</span>`
                             : '';
                         itemizedHtml += `
-                            <li class="flex justify-between items-center ${isDiscountShare ? 'text-emerald-300' : 'text-slate-300'}">
-                                <span class="truncate pr-2">• ${escapeHtml(share.name)}${splitMeta}</span>
-                                <span class="font-mono ${isDiscountShare ? 'text-emerald-400' : 'text-slate-200'}">${formatEUR(share.shareCost)}</span>
+                            <li class="flex justify-between items-start gap-2 ${isDiscountShare ? 'text-emerald-300' : 'text-slate-300'}">
+                                <span class="break-words whitespace-normal flex-1 pr-2">• ${escapeHtml(share.name)}${splitMeta}</span>
+                                <span class="font-mono shrink-0 ${isDiscountShare ? 'text-emerald-400' : 'text-slate-200'}">${formatEUR(share.shareCost)}</span>
                             </li>
                         `;
                     });
