@@ -119,9 +119,18 @@
                 </div>
             </div>
 
-            <!-- Editable Receipt Title + Clear All Action -->
+            <!-- View Switcher + Editable Receipt Title + Clear All Action -->
             <div class="flex flex-wrap items-center gap-2.5 flex-1 sm:flex-initial justify-end">
-                <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 min-w-[180px] sm:min-w-[220px]">
+                <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-semibold">
+                    <button type="button" id="btnHeaderSplitView" class="px-3 py-1.5 rounded-lg bg-cyan-600 text-white transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-table-columns"></i> Split View
+                    </button>
+                    <button type="button" id="btnHeaderReceiptView" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-receipt"></i> Receipt View
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 min-w-[170px] sm:min-w-[210px]">
                     <i class="fa-solid fa-tag text-cyan-400 text-xs shrink-0"></i>
                     <input
                         type="text"
@@ -132,6 +141,7 @@
                         class="bg-transparent text-xs sm:text-sm font-semibold text-white placeholder-slate-500 focus:outline-none w-full"
                     >
                 </div>
+
                 <button type="button" id="btnClearItems" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
                     <i class="fa-solid fa-trash-can text-red-400"></i> Clear All Items
                 </button>
@@ -142,7 +152,7 @@
     <main class="max-w-6xl mx-auto px-4 mt-6 space-y-6">
 
         <!-- 1. People Management Panel (2 to 10 People) -->
-        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+        <section id="peopleSection" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div>
                     <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
@@ -165,7 +175,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
             <!-- Left Column: Add Item & Item Selector List (7 cols) -->
-            <section class="lg:col-span-7 space-y-5">
+            <section id="itemsWorkspaceSection" class="lg:col-span-7 space-y-5">
 
                 <!-- Add Item Card (Single + Bulk Paste Tabs) -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
@@ -237,10 +247,10 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
             </section>
 
             <!-- Right Column: Live Summary, Share Breakdown & Receipt Card (5 cols) -->
-            <section class="lg:col-span-5 space-y-5">
+            <section id="summaryWorkspaceSection" class="lg:col-span-5 space-y-5">
 
                 <!-- Overall Bill Status Card -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+                <div id="billSummaryCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-base font-bold text-slate-200 flex items-center gap-2">
                             <i class="fa-solid fa-chart-pie text-cyan-400"></i> Bill Summary
@@ -275,7 +285,7 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                 </div>
 
                 <!-- Export & Copy Card -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                <div id="shareBreakdownCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
                             <i class="fa-solid fa-share-nodes text-cyan-400"></i> Share Breakdown
@@ -295,7 +305,7 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                 </div>
 
                 <!-- Structured Receipt View & JPEG Download Section -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                <div id="receiptSectionCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
                             <i class="fa-solid fa-receipt text-cyan-400"></i> Receipt View
@@ -342,7 +352,7 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                             </div>
 
                             <div class="text-center receipt-no-rule font-normal" style="margin-top: 14px; font-size: 10px; font-weight: 400; letter-spacing: -0.04em; word-spacing: -0.18em; color: #64748b; line-height: 1.35;">
-                                Mr.Bhone's Bill Splitter
+                                Screenshot or tap "Save JPG" to download
                             </div>
                         </div>
                     </div>
@@ -356,6 +366,37 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
     <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-6 right-6 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl font-medium text-sm transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 z-50">
         <i class="fa-solid fa-circle-check"></i> <span id="toastMessage">Summary copied to clipboard!</span>
+    </div>
+
+    <!-- iOS / Mobile JPEG Save & Share Modal -->
+    <div id="iosReceiptModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-4 sm:p-5 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between gap-2">
+                <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-image text-emerald-400"></i> Receipt JPEG Ready
+                </h4>
+                <button type="button" id="btnCloseIosModal" aria-label="Close receipt preview" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <div class="overflow-y-auto bg-slate-950 border border-slate-800 rounded-xl p-2 flex justify-center">
+                <img id="iosReceiptPreviewImg" alt="Generated Receipt JPEG" class="w-full h-auto rounded-lg object-contain">
+            </div>
+
+            <p id="iosReceiptInstruction" class="text-xs text-slate-300 leading-relaxed">
+                Tap <span class="font-semibold text-white">Share / Save</span> to save to Photos or Files, or press and hold the image above to save it.
+            </p>
+
+            <div class="flex items-center justify-end gap-2 pt-1">
+                <button type="button" id="btnIosNativeShare" class="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow transition flex items-center justify-center gap-1.5 active:scale-95">
+                    <i class="fa-solid fa-share-from-square"></i> Share / Save JPEG
+                </button>
+                <button type="button" id="btnIosDone" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold transition">
+                    Done
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Application Script -->
@@ -386,87 +427,115 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
             { id: 2, name: 'Person 2', colorIdx: 1 }
         ];
         let items = [];
+        let activeTopView = 'split'; // 'split' | 'receipt'
         let receiptVisible = false;
         let toastTimer = null;
+        let pendingIosExport = null;
 
-        // Normalize Unicode dashes/minus variants to ASCII '-'
+        // Normalize unicode minus/dashes to standard ASCII hyphen '-'
         function normalizeDashes(str) {
-            return String(str || '').replace(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, '-');
+            return String(str || '').replace(/[\u2212\u2013\u2014\u2010\u2011]/g, '-');
         }
 
-        // Parse prices such as "8.00", "8,00", "-1.50", "- 1,50", "-€2.00"
-        function parseFlexiblePrice(rawStr) {
-            if (!rawStr) return NaN;
-            const cleaned = normalizeDashes(rawStr)
+        // Format number as Euro currency (supports negative discount values like -€1.50)
+        function formatEUR(amount) {
+            const num = Number(amount);
+            if (!Number.isFinite(num)) return '€0.00';
+            const absFormatted = Math.abs(num).toFixed(2);
+            return num < -1e-9 ? `-€${absFormatted}` : `€${absFormatted}`;
+        }
+
+        // Parse decimal price input supporting dot or comma and leading negative minus sign
+        function parsePriceInput(rawValue) {
+            const cleaned = normalizeDashes(rawValue)
                 .replace(/[€$£\s]/g, '')
                 .replace(',', '.');
+            if (!/^[+-]?\d+(?:\.\d{1,2})?$/.test(cleaned)) {
+                return NaN;
+            }
             return parseFloat(cleaned);
         }
 
-        // Sanitize and normalize loaded people list (2 to 10 people with unique valid color indices)
-        function sanitizePeopleList(rawPeople) {
-            if (!Array.isArray(rawPeople) || rawPeople.length < MIN_PEOPLE) {
-                return null;
-            }
-            const usedColors = new Set();
-            const allIndices = PERSON_COLORS.map((_, idx) => idx);
-
-            const normalized = rawPeople.slice(0, MAX_PEOPLE).map((person, idx) => {
-                const rawId = Number(person && person.id);
-                const id = Number.isFinite(rawId) && rawId > 0 ? rawId : idx + 1;
-                const name = typeof (person && person.name) === 'string' && person.name.trim()
-                    ? person.name.trim()
-                    : `Person ${idx + 1}`;
-
-                let colorIdx = Number(person && person.colorIdx);
-                if (!Number.isInteger(colorIdx) || colorIdx < 0 || colorIdx >= PERSON_COLORS.length || usedColors.has(colorIdx)) {
-                    colorIdx = allIndices.find(c => !usedColors.has(c)) ?? (idx % PERSON_COLORS.length);
-                }
-                usedColors.add(colorIdx);
-
-                return { id, name, colorIdx };
-            });
-
-            return normalized.length >= MIN_PEOPLE ? normalized : null;
+        // Detect iOS / iPadOS devices (including iPadOS 13+ reporting MacIntel with touch points)
+        function isIosDevice() {
+            const ua = navigator.userAgent || '';
+            const platform = navigator.platform || '';
+            const isAppleMobile = /iPhone|iPad|iPod/i.test(ua);
+            const isIpadOsDesktopUa = platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+            return isAppleMobile || isIpadOsDesktopUa;
         }
 
-        // Sanitize loaded items list and ensure selectedPeople only references active people
-        function sanitizeItemsList(rawItems, activePeople) {
-            if (!Array.isArray(rawItems)) return [];
-            const validPersonIds = new Set(activePeople.map(p => p.id));
-
-            return rawItems
-                .map((item, idx) => {
-                    const price = Number(item && item.price);
-                    if (!Number.isFinite(price) || price === 0) return null;
-
-                    const name = typeof (item && item.name) === 'string' && item.name.trim()
-                        ? item.name.trim()
-                        : (price < 0 ? 'Discount' : `Item ${idx + 1}`);
-
-                    const selectedPeople = Array.isArray(item && item.selectedPeople)
-                        ? [...new Set(item.selectedPeople.map(id => Number(id)).filter(id => validPersonIds.has(id)))]
-                        : [];
-
-                    const rawId = Number(item && item.id);
-                    const id = Number.isFinite(rawId) && rawId > 0 ? rawId : Date.now() + idx + Math.random();
-
-                    return { id, name, price, selectedPeople };
-                })
-                .filter(Boolean);
+        // Convert data URL into a Blob safely
+        function dataUrlToBlob(dataUrl) {
+            if (typeof dataUrl !== 'string' || !dataUrl.includes(',')) {
+                return new Blob([], { type: 'image/jpeg' });
+            }
+            const parts = dataUrl.split(',');
+            const mimeMatch = parts[0].match(/:(.*?);/);
+            const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+            const byteString = atob(parts[1]);
+            const len = byteString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([bytes], { type: mimeType });
         }
 
         // --- LOCAL STORAGE PERSISTENCE ---
         function saveState() {
             try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                    title: receiptTitle,
+                const state = {
+                    receiptTitle,
                     people,
                     items
-                }));
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
             } catch (err) {
-                console.error('Failed to save state to localStorage:', err);
+                console.error('Error saving state to localStorage:', err);
             }
+        }
+
+        function sanitizeLoadedState(parsed) {
+            if (!parsed || typeof parsed !== 'object') return false;
+
+            if (typeof parsed.receiptTitle === 'string' && parsed.receiptTitle.trim()) {
+                receiptTitle = parsed.receiptTitle.trim().slice(0, 60);
+            } else if (typeof parsed.t === 'string' && parsed.t.trim()) {
+                receiptTitle = parsed.t.trim().slice(0, 60);
+            }
+
+            const rawPeople = Array.isArray(parsed.people) ? parsed.people : (Array.isArray(parsed.p) ? parsed.p : null);
+            if (rawPeople && rawPeople.length >= MIN_PEOPLE) {
+                const validPeople = rawPeople.slice(0, MAX_PEOPLE).map((p, idx) => ({
+                    id: Number.isFinite(Number(p.id)) ? Number(p.id) : idx + 1,
+                    name: String(p.name || `Person ${idx + 1}`).trim() || `Person ${idx + 1}`,
+                    colorIdx: Number.isInteger(p.colorIdx) && p.colorIdx >= 0 && p.colorIdx < PERSON_COLORS.length
+                        ? p.colorIdx
+                        : idx % PERSON_COLORS.length
+                }));
+                people = validPeople;
+            }
+
+            const validPersonIds = new Set(people.map(p => p.id));
+            const rawItems = Array.isArray(parsed.items) ? parsed.items : (Array.isArray(parsed.i) ? parsed.i : null);
+            if (rawItems) {
+                items = rawItems
+                    .filter(item => item && typeof item === 'object' && Number.isFinite(Number(item.price)) && Number(item.price) !== 0)
+                    .map((item, idx) => {
+                        const selected = Array.isArray(item.selectedPeople)
+                            ? Array.from(new Set(item.selectedPeople.map(Number).filter(id => validPersonIds.has(id))))
+                            : [];
+                        return {
+                            id: Number.isFinite(Number(item.id)) ? Number(item.id) : Date.now() + idx,
+                            name: String(item.name || `Item ${idx + 1}`).trim() || `Item ${idx + 1}`,
+                            price: Number(item.price),
+                            selectedPeople: selected
+                        };
+                    });
+            }
+
+            return true;
         }
 
         function loadState() {
@@ -474,33 +543,13 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                 const raw = localStorage.getItem(STORAGE_KEY);
                 if (!raw) return;
                 const parsed = JSON.parse(raw);
-                if (!parsed || typeof parsed !== 'object') return;
-
-                if (typeof parsed.title === 'string' && parsed.title.trim()) {
-                    receiptTitle = parsed.title.trim().toUpperCase();
-                }
-
-                const validPeople = sanitizePeopleList(parsed.people);
-                if (validPeople) {
-                    people = validPeople;
-                }
-
-                items = sanitizeItemsList(parsed.items, people);
+                sanitizeLoadedState(parsed);
             } catch (err) {
-                console.error('Failed to load saved state:', err);
+                console.error('Error loading state from localStorage:', err);
             }
         }
 
-        function formatEUR(amount) {
-            const safeAmount = Number.isFinite(amount) ? amount : 0;
-            const rounded = Math.round((safeAmount + Number.EPSILON) * 100) / 100;
-            if (rounded < 0) {
-                return '-€' + Math.abs(rounded).toFixed(2);
-            }
-            return '€' + rounded.toFixed(2);
-        }
-
-        // --- SHARE LINK HELPERS (UTF-8 URL-safe Base64 in URL hash) ---
+        // --- UNCOMPRESSED URL HASH SHARING (#state=...) ---
         function encodeShareState() {
             const payload = {
                 t: receiptTitle,
@@ -533,11 +582,13 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
         function loadSharedStateFromHash() {
             const hash = window.location.hash || '';
             const match = hash.match(/state=([A-Za-z0-9\-_]+)/);
-            if (!match || !match[1]) return false;
+            if (!match) return false;
 
             try {
                 let base64 = match[1].replace(/-/g, '+').replace(/_/g, '/');
-                while (base64.length % 4) base64 += '=';
+                while (base64.length % 4) {
+                    base64 += '=';
+                }
 
                 const binary = atob(base64);
                 const bytes = new Uint8Array(binary.length);
@@ -547,270 +598,180 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
 
                 const jsonStr = new TextDecoder().decode(bytes);
                 const parsed = JSON.parse(jsonStr);
-                if (!parsed || typeof parsed !== 'object') return false;
 
-                if (typeof parsed.t === 'string' && parsed.t.trim()) {
-                    receiptTitle = parsed.t.trim().toUpperCase();
+                const applied = sanitizeLoadedState(parsed);
+                if (applied) {
+                    saveState();
+                    return true;
                 }
-
-                const sanitizedPeople = sanitizePeopleList(parsed.p);
-                if (!sanitizedPeople) return false;
-                people = sanitizedPeople;
-                items = sanitizeItemsList(parsed.i, people);
-
-                saveState();
-                return true;
+                return false;
             } catch (err) {
-                console.warn('Failed to parse shared link state:', err);
+                console.error('Failed to parse shared link state:', err);
                 return false;
             }
         }
 
         function copyShareLink() {
-            try {
-                const encoded = encodeShareState();
-                const shareUrl = `${window.location.origin}${window.location.pathname}#state=${encoded}`;
+            const encoded = encodeShareState();
+            const shareUrl = `${window.location.origin}${window.location.pathname}#state=${encoded}`;
 
-                if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(shareUrl)
-                        .then(() => showToast('Shareable link copied!'))
-                        .catch(() => fallbackCopy(shareUrl, 'Shareable link copied!'));
-                } else {
-                    fallbackCopy(shareUrl, 'Shareable link copied!');
-                }
-            } catch (err) {
-                console.error('Failed to create share link:', err);
-                showToast('Could not generate share link', true);
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(shareUrl)
+                    .then(() => showToast('Shareable link copied!'))
+                    .catch(() => fallbackCopy(shareUrl, 'Shareable link copied!'));
+            } else {
+                fallbackCopy(shareUrl, 'Shareable link copied!');
             }
         }
 
-        // --- INITIALIZATION & EVENT LISTENERS ---
-        document.addEventListener('DOMContentLoaded', () => {
-            loadState();
-            const sharedLoaded = loadSharedStateFromHash();
+        // --- VIEW MODE & RECEIPT TITLE SYNC ---
+        function setTopViewMode(mode) {
+            activeTopView = mode === 'receipt' ? 'receipt' : 'split';
 
-            const titleInput = document.getElementById('receiptTitleInput');
-            titleInput.value = receiptTitle;
+            const btnSplit = document.getElementById('btnHeaderSplitView');
+            const btnReceipt = document.getElementById('btnHeaderReceiptView');
+            const peopleSec = document.getElementById('peopleSection');
+            const itemsSec = document.getElementById('itemsWorkspaceSection');
+            const summaryCol = document.getElementById('summaryWorkspaceSection');
+            const summaryCard = document.getElementById('billSummaryCard');
+            const shareCard = document.getElementById('shareBreakdownCard');
+            const receiptCardContainer = document.getElementById('receiptSectionCard');
 
-            setupEventListeners();
-            renderPeople();
-            renderItems();
-            updateCalculations();
-
-            if (sharedLoaded) {
-                showToast('Loaded shared bill split!');
-            }
-        });
-
-        function setupEventListeners() {
-            const tabSingleBtn = document.getElementById('tabSingleBtn');
-            const tabBulkBtn = document.getElementById('tabBulkBtn');
-            const addItemForm = document.getElementById('addItemForm');
-            const bulkPasteContainer = document.getElementById('bulkPasteContainer');
-
-            tabSingleBtn.addEventListener('click', () => {
-                tabSingleBtn.className = 'px-3 py-1 rounded-lg bg-cyan-600 text-white transition';
-                tabBulkBtn.className = 'px-3 py-1 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5';
-                addItemForm.classList.remove('hidden');
-                bulkPasteContainer.classList.add('hidden');
-            });
-
-            tabBulkBtn.addEventListener('click', () => {
-                tabBulkBtn.className = 'px-3 py-1 rounded-lg bg-cyan-600 text-white transition flex items-center gap-1.5';
-                tabSingleBtn.className = 'px-3 py-1 rounded-lg text-slate-400 hover:text-white transition';
-                bulkPasteContainer.classList.remove('hidden');
-                addItemForm.classList.add('hidden');
-                document.getElementById('bulkPasteInput').focus();
-            });
-
-            // Receipt Title live edit & persistence
-            const titleInput = document.getElementById('receiptTitleInput');
-            titleInput.addEventListener('input', () => {
-                receiptTitle = titleInput.value.toUpperCase();
-                saveState();
-                updateReceiptTitleDisplay();
-                updateCalculations();
-            });
-            titleInput.addEventListener('blur', () => {
-                const cleaned = titleInput.value.trim().toUpperCase() || DEFAULT_RECEIPT_TITLE;
-                receiptTitle = cleaned;
-                titleInput.value = cleaned;
-                saveState();
-                updateReceiptTitleDisplay();
-                updateCalculations();
-            });
-
-            // Add Person button
-            document.getElementById('btnAddPerson').addEventListener('click', addPerson);
-
-            // Add Single Item / Discount Form Submit
-            addItemForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const nameInput = document.getElementById('itemNameInput');
-                const priceInput = document.getElementById('itemPriceInput');
-
-                const name = nameInput.value.trim();
-                const price = parseFlexiblePrice(priceInput.value);
-
-                if (name && Number.isFinite(price) && price !== 0) {
-                    items.push({
-                        id: Date.now() + Math.random(),
-                        name,
-                        price,
-                        selectedPeople: []
-                    });
-
-                    nameInput.value = '';
-                    priceInput.value = '';
-                    nameInput.focus();
-
-                    saveState();
-                    renderItems();
-                    updateCalculations();
-                } else {
-                    showToast('Enter a valid non-zero price (e.g. 5.00 or -1.50)', true);
+            if (activeTopView === 'receipt') {
+                if (btnSplit) {
+                    btnSplit.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5';
                 }
-            });
-
-            // Bulk Paste button
-            document.getElementById('btnParseBulk').addEventListener('click', handleBulkPaste);
-
-            // Clear All Items button
-            document.getElementById('btnClearItems').addEventListener('click', () => {
-                if (items.length === 0) return;
-                items = [];
-                saveState();
-                renderItems();
+                if (btnReceipt) {
+                    btnReceipt.className = 'px-3 py-1.5 rounded-lg bg-cyan-600 text-white transition flex items-center gap-1.5';
+                }
+                if (peopleSec) peopleSec.classList.add('hidden');
+                if (itemsSec) itemsSec.classList.add('hidden');
+                if (summaryCard) summaryCard.classList.add('hidden');
+                if (shareCard) shareCard.classList.add('hidden');
+                if (summaryCol) {
+                    summaryCol.classList.remove('lg:col-span-5');
+                    summaryCol.classList.add('lg:col-span-12');
+                }
+                if (!receiptVisible) {
+                    receiptVisible = true;
+                    syncReceiptVisibilityUI();
+                }
                 updateCalculations();
-                showToast('All items cleared');
-            });
-
-            // Share Breakdown actions
-            document.getElementById('btnCopySummary').addEventListener('click', copySummaryToClipboard);
-            document.getElementById('btnCopyShareLink').addEventListener('click', () => {
-                copyShareLink();
-            });
-
-            // Receipt View & JPG Export actions
-            document.getElementById('btnToggleReceipt').addEventListener('click', toggleReceiptView);
-            document.getElementById('btnDownloadReceiptJpg').addEventListener('click', downloadReceiptAsJpg);
+            } else {
+                if (btnSplit) {
+                    btnSplit.className = 'px-3 py-1.5 rounded-lg bg-cyan-600 text-white transition flex items-center gap-1.5';
+                }
+                if (btnReceipt) {
+                    btnReceipt.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5';
+                }
+                if (peopleSec) peopleSec.classList.remove('hidden');
+                if (itemsSec) itemsSec.classList.remove('hidden');
+                if (summaryCard) summaryCard.classList.remove('hidden');
+                if (shareCard) shareCard.classList.remove('hidden');
+                if (summaryCol) {
+                    summaryCol.classList.remove('lg:col-span-12');
+                    summaryCol.classList.add('lg:col-span-5');
+                }
+                if (receiptCardContainer) {
+                    receiptCardContainer.classList.remove('hidden');
+                }
+            }
         }
 
-        function updateReceiptTitleDisplay() {
-            const activeTitle = (receiptTitle || DEFAULT_RECEIPT_TITLE).toUpperCase();
-            const displayEl = document.getElementById('receiptTitleDisplay');
-            if (displayEl) {
-                displayEl.textContent = activeTitle;
-            }
+        function syncReceiptVisibilityUI() {
+            const wrapper = document.getElementById('receiptWrapper');
+            const label = document.getElementById('toggleReceiptLabel');
+            const downloadBtn = document.getElementById('btnDownloadReceiptJpg');
+
+            if (wrapper) wrapper.classList.toggle('hidden', !receiptVisible);
+            if (label) label.textContent = receiptVisible ? 'Hide Receipt' : 'Show Receipt';
+            if (downloadBtn) downloadBtn.classList.toggle('hidden', !receiptVisible);
         }
 
         function toggleReceiptView() {
             receiptVisible = !receiptVisible;
-            const wrapper = document.getElementById('receiptWrapper');
-            const btnJpg = document.getElementById('btnDownloadReceiptJpg');
-            const label = document.getElementById('toggleReceiptLabel');
-
+            syncReceiptVisibilityUI();
             if (receiptVisible) {
-                wrapper.classList.remove('hidden');
-                btnJpg.classList.remove('hidden');
-                label.textContent = 'Hide Receipt';
                 updateCalculations();
-            } else {
-                wrapper.classList.add('hidden');
-                btnJpg.classList.add('hidden');
-                label.textContent = 'Show Receipt';
             }
         }
 
-        async function downloadReceiptAsJpg() {
-            if (!receiptVisible) {
-                toggleReceiptView();
+        function updateReceiptTitleDisplay() {
+            const displayEl = document.getElementById('receiptTitleDisplay');
+            if (displayEl) {
+                const cleanTitle = (receiptTitle || DEFAULT_RECEIPT_TITLE).trim() || DEFAULT_RECEIPT_TITLE;
+                displayEl.textContent = cleanTitle.toUpperCase();
             }
-            const sourceCard = document.getElementById('receiptCard');
-            if (!sourceCard || typeof html2canvas === 'undefined') {
-                showToast('JPG generator unavailable', true);
+        }
+
+        function syncTitleInput() {
+            const inputEl = document.getElementById('receiptTitleInput');
+            if (inputEl && inputEl.value !== receiptTitle) {
+                inputEl.value = receiptTitle;
+            }
+            updateReceiptTitleDisplay();
+        }
+
+        // --- iOS RECEIPT MODAL HELPERS ---
+        function openIosReceiptModal(dataUrl, file, fileName) {
+            pendingIosExport = { dataUrl, file, fileName };
+            const modal = document.getElementById('iosReceiptModal');
+            const img = document.getElementById('iosReceiptPreviewImg');
+            const shareBtn = document.getElementById('btnIosNativeShare');
+            const instruction = document.getElementById('iosReceiptInstruction');
+
+            if (img) {
+                img.src = dataUrl;
+            }
+
+            const canShareFile = Boolean(
+                file &&
+                typeof navigator.share === 'function' &&
+                typeof navigator.canShare === 'function' &&
+                navigator.canShare({ files: [file] })
+            );
+
+            if (shareBtn) {
+                shareBtn.classList.toggle('hidden', !canShareFile);
+            }
+
+            if (instruction) {
+                instruction.innerHTML = canShareFile
+                    ? 'Tap <span class="font-semibold text-white">Share / Save JPEG</span> to save to Photos or Files, or press and hold the image to save.'
+                    : 'Press and hold the receipt image above and choose <span class="font-semibold text-white">Save to Photos</span> or <span class="font-semibold text-white">Save Image</span>.';
+            }
+
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+        }
+
+        function closeIosReceiptModal() {
+            const modal = document.getElementById('iosReceiptModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+            pendingIosExport = null;
+        }
+
+        async function triggerIosNativeShare() {
+            if (!pendingIosExport || !pendingIosExport.file) {
+                showToast('Press and hold the image to save it', true);
                 return;
             }
 
-            // Render an offscreen 420px clone with full unwrapped height so html2canvas captures crisp alignment
-            const exportHost = document.createElement('div');
-            exportHost.style.position = 'fixed';
-            exportHost.style.left = '-9999px';
-            exportHost.style.top = '0';
-            exportHost.style.width = '420px';
-            exportHost.style.background = '#ffffff';
-            exportHost.style.zIndex = '-1';
-            exportHost.style.pointerEvents = 'none';
-
-            const clone = sourceCard.cloneNode(true);
-            clone.id = '';
-            clone.classList.add('receipt-export-clone');
-            clone.style.width = '420px';
-            clone.style.maxWidth = '420px';
-            clone.style.margin = '0';
-            clone.style.height = 'auto';
-            clone.style.maxHeight = 'none';
-            clone.style.overflow = 'visible';
-            clone.style.backgroundColor = '#ffffff';
-            clone.style.color = '#0f172a';
-            clone.style.fontFamily = "'Roboto Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', monospace";
-            clone.style.fontWeight = '400';
-            clone.style.letterSpacing = '-0.04em';
-            clone.style.wordSpacing = '-0.18em';
-            clone.style.padding = '26px 24px';
-            clone.style.borderRadius = '0';
-            clone.style.border = 'none';
-            clone.style.boxShadow = 'none';
-
-            clone.querySelectorAll('*').forEach(el => {
-                el.style.overflow = 'visible';
-                el.style.maxHeight = 'none';
-                el.style.textOverflow = 'clip';
-                el.style.textDecoration = 'none';
-                el.style.fontFamily = "'Roboto Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', monospace";
-                el.style.letterSpacing = '-0.04em';
-                el.style.wordSpacing = '-0.18em';
-                el.style.fontWeight = '400';
-                if (el.classList.contains('receipt-no-rule')) {
-                    el.style.borderTop = 'none';
-                    el.style.borderBottom = 'none';
-                }
-            });
-
-            exportHost.appendChild(clone);
-            document.body.appendChild(exportHost);
-
             try {
-                showToast('Generating high-res receipt JPG...');
-                if (document.fonts && document.fonts.ready) {
-                    await document.fonts.ready;
-                }
-                const canvas = await html2canvas(clone, {
-                    scale: 3,
-                    backgroundColor: '#ffffff',
-                    useCORS: true,
-                    width: 420,
-                    height: clone.scrollHeight,
-                    windowWidth: 420,
-                    windowHeight: clone.scrollHeight
+                await navigator.share({
+                    files: [pendingIosExport.file],
+                    title: (receiptTitle || DEFAULT_RECEIPT_TITLE)
                 });
-
-                const safeSlug = (receiptTitle || DEFAULT_RECEIPT_TITLE)
-                    .toLowerCase()
-                    .replace(/[^a-z0-9]+/g, '-')
-                    .replace(/^-|-$/g, '') || 'bill-split-receipt';
-
-                const link = document.createElement('a');
-                link.download = `${safeSlug}-${new Date().toISOString().slice(0, 10)}.jpg`;
-                link.href = canvas.toDataURL('image/jpeg', 0.95);
-                link.click();
-                showToast('Receipt JPG downloaded!');
+                showToast('Receipt JPEG shared!');
             } catch (err) {
-                console.error('JPG export failed:', err);
-                showToast('Could not export JPG — you can screenshot the receipt', true);
-            } finally {
-                if (exportHost.parentNode) {
-                    exportHost.parentNode.removeChild(exportHost);
+                if (err && err.name === 'AbortError') {
+                    showToast('Share cancelled', true);
+                } else {
+                    console.warn('iOS file share failed, keeping preview open:', err);
+                    showToast('Press and hold the image above to save', true);
                 }
             }
         }
@@ -818,18 +779,18 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
         // --- BULK TEXT PARSER ---
         function handleBulkPaste() {
             const textarea = document.getElementById('bulkPasteInput');
+            if (!textarea) return;
             const rawText = textarea.value;
             if (!rawText.trim()) return;
 
             const lines = rawText.split(/\r?\n/);
-            const ignoredKeywords = /^(ursprünglicher preis|summe|total|subtotal|bar|rückgeld|mwst|ust|kasse|zeit|verkauft)/i;
+            const ignoredKeywords = /^(ursprünglicher preis|summe|total|subtotal|bar|rückgeld|mwst|ust|kasse|zeit|verkauft|bon-nr|datum)/i;
             let addedCount = 0;
 
             lines.forEach((rawLine, idx) => {
                 const line = normalizeDashes(rawLine).trim();
                 if (!line || ignoredKeywords.test(line)) return;
 
-                // Match trailing price including optional minus sign and currency symbols
                 const priceMatch = line.match(/(?:(-\s*)?[€$£]\s*|(-\s*))(\d+(?:[.,]\d{1,2})?)\s*(?:[€$£]|[A-Za-z])?\s*$/);
                 if (!priceMatch) return;
 
@@ -839,9 +800,7 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                 if (isNegative) numericPrice = -numericPrice;
 
                 let namePart = line.slice(0, priceMatch.index).trim();
-                // Strip leading receipt barcodes (6+ digits)
                 namePart = namePart.replace(/^\d{6,}\s+/, '');
-                // Strip trailing punctuation/currency symbols
                 namePart = namePart.replace(/[-:•|€$£]+$/g, '').trim();
 
                 if (!namePart) {
@@ -915,6 +874,7 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
 
         function renderPeople() {
             const container = document.getElementById('peopleContainer');
+            if (!container) return;
             container.innerHTML = '';
 
             people.forEach(p => {
@@ -941,11 +901,13 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
             });
 
             const btnAdd = document.getElementById('btnAddPerson');
-            btnAdd.disabled = people.length >= MAX_PEOPLE;
-            if (people.length >= MAX_PEOPLE) {
-                btnAdd.classList.add('opacity-40', 'cursor-not-allowed');
-            } else {
-                btnAdd.classList.remove('opacity-40', 'cursor-not-allowed');
+            if (btnAdd) {
+                btnAdd.disabled = people.length >= MAX_PEOPLE;
+                if (people.length >= MAX_PEOPLE) {
+                    btnAdd.classList.add('opacity-40', 'cursor-not-allowed');
+                } else {
+                    btnAdd.classList.remove('opacity-40', 'cursor-not-allowed');
+                }
             }
         }
 
@@ -955,11 +917,17 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
             const itemCountBadge = document.getElementById('itemCountBadge');
             const listTotalDisplay = document.getElementById('listTotalDisplay');
 
+            if (!container) return;
             container.innerHTML = '';
-            itemCountBadge.textContent = `${items.length} item${items.length === 1 ? '' : 's'}`;
+
+            if (itemCountBadge) {
+                itemCountBadge.textContent = `${items.length} item${items.length === 1 ? '' : 's'}`;
+            }
 
             const grandTotal = items.reduce((sum, item) => sum + item.price, 0);
-            listTotalDisplay.textContent = formatEUR(grandTotal);
+            if (listTotalDisplay) {
+                listTotalDisplay.textContent = formatEUR(grandTotal);
+            }
 
             if (items.length === 0) {
                 container.innerHTML = `
@@ -1027,13 +995,14 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                         </div>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-900">
-                        <span class="text-[11px] font-medium text-slate-400 mr-1">Assign:</span>
+                    <div class="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-800/80">
                         ${personPillsHtml}
-
-                        <button type="button" onclick="toggleSplitAll(${item.id})" class="ml-auto px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[11px] font-medium transition">
-                            <i class="fa-solid fa-arrows-split-up-and-left text-[10px] mr-1"></i> ${allSelected ? 'Clear' : 'Split All'}
-                        </button>
+                        ${people.length > 0 ? `
+                            <button type="button" onclick="toggleSplitAll(${item.id})"
+                                class="ml-auto px-2 py-1 rounded-lg text-[11px] font-semibold transition ${allSelected ? 'bg-slate-700 text-white' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'}">
+                                ${allSelected ? 'Clear All' : 'Split All'}
+                            </button>
+                        ` : ''}
                     </div>
                 `;
 
@@ -1114,68 +1083,75 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                 }
             });
 
-            document.getElementById('summaryGrandTotal').textContent = formatEUR(grandTotal);
-            document.getElementById('summaryAssignedTotal').textContent = formatEUR(totalAssignedCost);
-            document.getElementById('summaryUnassignedTotal').textContent = formatEUR(unassignedCost);
+            const grandTotalEl = document.getElementById('summaryGrandTotal');
+            const assignedTotalEl = document.getElementById('summaryAssignedTotal');
+            const unassignedTotalEl = document.getElementById('summaryUnassignedTotal');
+            if (grandTotalEl) grandTotalEl.textContent = formatEUR(grandTotal);
+            if (assignedTotalEl) assignedTotalEl.textContent = formatEUR(totalAssignedCost);
+            if (unassignedTotalEl) unassignedTotalEl.textContent = formatEUR(unassignedCost);
 
             const warningEl = document.getElementById('unassignedWarning');
             const statusBadge = document.getElementById('unassignedStatusBadge');
 
-            if (unassignedItemsCount > 0) {
-                warningEl.classList.remove('hidden');
-                statusBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20';
-                statusBadge.textContent = `${unassignedItemsCount} Unassigned`;
-            } else {
-                warningEl.classList.add('hidden');
-                statusBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-                statusBadge.textContent = 'All Items Split';
+            if (warningEl && statusBadge) {
+                if (unassignedItemsCount > 0) {
+                    warningEl.classList.remove('hidden');
+                    statusBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                    statusBadge.textContent = `${unassignedItemsCount} Unassigned`;
+                } else {
+                    warningEl.classList.add('hidden');
+                    statusBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                    statusBadge.textContent = 'All Items Split';
+                }
             }
 
             const breakdownsContainer = document.getElementById('personBreakdownsContainer');
-            breakdownsContainer.innerHTML = '';
+            if (breakdownsContainer) {
+                breakdownsContainer.innerHTML = '';
 
-            people.forEach(p => {
-                const data = personTotals[p.id];
-                const color = PERSON_COLORS[p.colorIdx] || PERSON_COLORS[0];
+                people.forEach(p => {
+                    const data = personTotals[p.id];
+                    const color = PERSON_COLORS[p.colorIdx] || PERSON_COLORS[0];
 
-                const pCard = document.createElement('div');
-                pCard.className = `p-3.5 rounded-xl border ${color.border} ${color.bgSoft} transition space-y-2`;
+                    const pCard = document.createElement('div');
+                    pCard.className = `p-3.5 rounded-xl border ${color.border} ${color.bgSoft} transition space-y-2`;
 
-                let itemizedHtml = '';
-                if (data.itemShares.length === 0) {
-                    itemizedHtml = `<p class="text-xs text-slate-500 italic">No items assigned yet</p>`;
-                } else {
-                    itemizedHtml = `<ul class="space-y-1 text-xs">`;
-                    data.itemShares.forEach(share => {
-                        const isDiscountShare = share.shareCost < 0;
-                        const splitMeta = share.totalSplitCount > 1
-                            ? ` <span class="text-[10px] text-slate-400 whitespace-normal">(1/${share.totalSplitCount} of ${formatEUR(share.originalPrice)})</span>`
-                            : '';
-                        itemizedHtml += `
-                            <li class="flex justify-between items-start gap-2 ${isDiscountShare ? 'text-emerald-300' : 'text-slate-300'}">
-                                <span class="break-words whitespace-normal flex-1 pr-2">• ${escapeHtml(share.name)}${splitMeta}</span>
-                                <span class="font-mono shrink-0 ${isDiscountShare ? 'text-emerald-400' : 'text-slate-200'}">${formatEUR(share.shareCost)}</span>
-                            </li>
-                        `;
-                    });
-                    itemizedHtml += `</ul>`;
-                }
+                    let itemizedHtml = '';
+                    if (!data || data.itemShares.length === 0) {
+                        itemizedHtml = `<p class="text-xs text-slate-500 italic">No items assigned yet</p>`;
+                    } else {
+                        itemizedHtml = `<ul class="space-y-1 text-xs">`;
+                        data.itemShares.forEach(share => {
+                            const isDiscountShare = share.shareCost < 0;
+                            const splitMeta = share.totalSplitCount > 1
+                                ? ` <span class="text-[10px] text-slate-400 whitespace-normal">(1/${share.totalSplitCount} of ${formatEUR(share.originalPrice)})</span>`
+                                : '';
+                            itemizedHtml += `
+                                <li class="flex justify-between items-start gap-2 ${isDiscountShare ? 'text-emerald-300' : 'text-slate-300'}">
+                                    <span class="break-words whitespace-normal flex-1 pr-2">• ${escapeHtml(share.name)}${splitMeta}</span>
+                                    <span class="font-mono shrink-0 ${isDiscountShare ? 'text-emerald-400' : 'text-slate-200'}">${formatEUR(share.shareCost)}</span>
+                                </li>
+                            `;
+                        });
+                        itemizedHtml += `</ul>`;
+                    }
 
-                pCard.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full ${color.bg}"></span>
-                            <span class="font-bold text-sm text-white">${escapeHtml(p.name)}</span>
+                    pCard.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full ${color.bg}"></span>
+                                <span class="font-bold text-sm text-white">${escapeHtml(p.name)}</span>
+                            </div>
+                            <span class="text-base font-extrabold ${color.text} font-mono">${formatEUR(data ? data.totalOwed : 0)}</span>
                         </div>
-                        <span class="text-base font-extrabold ${color.text} font-mono">${formatEUR(data.totalOwed)}</span>
-                    </div>
-                    <div class="pt-2 border-t border-slate-800/80">
-                        ${itemizedHtml}
-                    </div>
-                `;
+                        <div class="pt-2 border-t border-slate-800/80">
+                            ${itemizedHtml}
+                        </div>
+                    `;
 
-                breakdownsContainer.appendChild(pCard);
-            });
+                    breakdownsContainer.appendChild(pCard);
+                });
+            }
 
             generateSummaryText(grandTotal, personTotals, unassignedItemsCount, unassignedCost);
             renderReceiptCard(grandTotal, personTotals, unassignedItemsCount);
@@ -1184,20 +1160,28 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
         function renderReceiptCard(grandTotal, personTotals, unassignedItemsCount = 0) {
             updateReceiptTitleDisplay();
             const tsEl = document.getElementById('receiptTimestamp');
-            tsEl.textContent = new Date().toLocaleString();
+            if (tsEl) {
+                tsEl.textContent = new Date().toLocaleString();
+            }
 
             const fullItemsEl = document.getElementById('receiptFullItems');
-            if (items.length === 0) {
-                fullItemsEl.innerHTML = `<div class="receipt-no-rule font-normal" style="color: #64748b; font-style: italic; font-size: 12px; font-weight: 400;">No items</div>`;
-            } else {
-                fullItemsEl.innerHTML = items.map(item => `
-                    <div class="receipt-grid-row receipt-no-rule font-normal">
-                        <span class="receipt-col-desc receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #0f172a;">${escapeHtml(item.name)}</span>
-                        <span class="receipt-col-amt receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #000000;">${formatEUR(item.price)}</span>
-                    </div>
-                `).join('');
+            if (fullItemsEl) {
+                if (items.length === 0) {
+                    fullItemsEl.innerHTML = `<div class="receipt-no-rule font-normal" style="color: #64748b; font-style: italic; font-size: 12px; font-weight: 400;">No items</div>`;
+                } else {
+                    fullItemsEl.innerHTML = items.map(item => `
+                        <div class="receipt-grid-row receipt-no-rule font-normal">
+                            <span class="receipt-col-desc receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #0f172a;">${escapeHtml(item.name)}</span>
+                            <span class="receipt-col-amt receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #000000;">${formatEUR(item.price)}</span>
+                        </div>
+                    `).join('');
+                }
             }
-            document.getElementById('receiptGrandTotal').textContent = formatEUR(grandTotal);
+
+            const receiptGrandTotalEl = document.getElementById('receiptGrandTotal');
+            if (receiptGrandTotalEl) {
+                receiptGrandTotalEl.textContent = formatEUR(grandTotal);
+            }
 
             const peopleSecEl = document.getElementById('receiptPeopleSections');
             const personBoxTints = [
@@ -1207,55 +1191,170 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                 { bg: '#f4f4f5', border: '#d4d4d8' }
             ];
 
-            peopleSecEl.innerHTML = people.map((p, idx) => {
-                const data = personTotals[p.id];
-                const tint = personBoxTints[idx % personBoxTints.length];
-                const rowsHtml = data.itemShares.length === 0
-                    ? `<div class="receipt-no-rule font-normal" style="color: #64748b; font-style: italic; font-size: 11.5px; font-weight: 400;">No items assigned</div>`
-                    : data.itemShares.map(share => {
-                        const origNote = share.totalSplitCount > 1
-                            ? ` <span class="receipt-no-rule font-normal" style="color: #475569; font-size: 11px; font-weight: 400;">(1/${share.totalSplitCount} of ${formatEUR(share.originalPrice)})</span>`
-                            : '';
-                        return `
-                            <div class="receipt-grid-row receipt-no-rule font-normal">
-                                <span class="receipt-col-desc receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #0f172a;">${escapeHtml(share.name)}${origNote}</span>
-                                <span class="receipt-col-amt receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #000000;">${formatEUR(share.shareCost)}</span>
-                            </div>
-                        `;
-                    }).join('');
+            if (peopleSecEl) {
+                peopleSecEl.innerHTML = people.map((p, idx) => {
+                    const data = personTotals[p.id] || { totalOwed: 0, itemShares: [] };
+                    const tint = personBoxTints[idx % personBoxTints.length];
 
-                return `
-                    <div class="receipt-section-box font-normal" style="background-color: ${tint.bg}; border: 1px solid ${tint.border};">
-                        <div class="receipt-grid-row receipt-no-rule font-normal" style="margin-bottom: 5px;">
-                            <span class="receipt-col-desc receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #000000;">${escapeHtml(p.name)}</span>
-                            <span class="receipt-col-amt receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #000000;">${formatEUR(data.totalOwed)}</span>
+                    const linesHtml = data.itemShares.length > 0
+                        ? data.itemShares.map(share => {
+                            const splitSuffix = share.totalSplitCount > 1
+                                ? ` (1/${share.totalSplitCount} of ${formatEUR(share.originalPrice)})`
+                                : '';
+                            return `
+                                <div class="receipt-grid-row receipt-no-rule font-normal">
+                                    <span class="receipt-col-desc receipt-no-rule font-normal" style="font-weight: 400; font-size: 11.5px; color: #1e293b;">${escapeHtml(share.name)}${escapeHtml(splitSuffix)}</span>
+                                    <span class="receipt-col-amt receipt-no-rule font-normal" style="font-weight: 400; font-size: 11.5px; color: #0f172a;">${formatEUR(share.shareCost)}</span>
+                                </div>
+                            `;
+                        }).join('')
+                        : `<div class="receipt-no-rule font-normal" style="font-size: 11.5px; color: #64748b; font-style: italic; font-weight: 400;">No items assigned</div>`;
+
+                    return `
+                        <div class="receipt-section-box font-normal" style="background-color: ${tint.bg}; border: 1px solid ${tint.border};">
+                            <div class="receipt-grid-row receipt-no-rule font-normal" style="margin-bottom: 6px; padding-bottom: 5px; background-color: rgba(15, 23, 42, 0.05); padding: 6px 8px; border-radius: 6px;">
+                                <span class="receipt-col-desc receipt-no-rule font-normal" style="font-weight: 400; font-size: 12.5px; color: #000000;">${escapeHtml(p.name.toUpperCase())}</span>
+                                <span class="receipt-col-amt receipt-no-rule font-normal" style="font-weight: 400; font-size: 12.5px; color: #000000;">${formatEUR(data.totalOwed)}</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
+                                ${linesHtml}
+                            </div>
                         </div>
-                        <div class="receipt-no-rule font-normal" style="display: flex; flex-direction: column; gap: 3px; padding-left: 8px;">
-                            ${rowsHtml}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
+            }
 
             const unassignedSecEl = document.getElementById('receiptUnassignedSection');
             const unassignedItemsEl = document.getElementById('receiptUnassignedItems');
-            const unassignedItems = items.filter(item => item.selectedPeople.length === 0);
+            if (unassignedSecEl && unassignedItemsEl) {
+                const unassignedEntries = items.filter(i => i.selectedPeople.length === 0);
+                if (unassignedItemsCount > 0 && unassignedEntries.length > 0) {
+                    unassignedSecEl.classList.remove('hidden');
+                    unassignedItemsEl.innerHTML = unassignedEntries.map(item => `
+                        <div class="receipt-grid-row receipt-no-rule font-normal">
+                            <span class="receipt-col-desc receipt-no-rule font-normal" style="font-weight: 400; font-size: 11.5px; color: #1e293b;">${escapeHtml(item.name)}</span>
+                            <span class="receipt-col-amt receipt-no-rule font-normal" style="font-weight: 400; font-size: 11.5px; color: #0f172a;">${formatEUR(item.price)}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    unassignedSecEl.classList.add('hidden');
+                    unassignedItemsEl.innerHTML = '';
+                }
+            }
+        }
 
-            if (unassignedItemsCount > 0 && unassignedItems.length > 0) {
-                unassignedSecEl.classList.remove('hidden');
-                unassignedItemsEl.innerHTML = unassignedItems.map(item => `
-                    <div class="receipt-grid-row receipt-no-rule font-normal">
-                        <span class="receipt-col-desc receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #0f172a;">${escapeHtml(item.name)}</span>
-                        <span class="receipt-col-amt receipt-no-rule font-normal" style="font-weight: 400; font-size: 12px; color: #000000;">${formatEUR(item.price)}</span>
-                    </div>
-                `).join('');
-            } else {
-                unassignedSecEl.classList.add('hidden');
-                unassignedItemsEl.innerHTML = '';
+        async function downloadReceiptAsJpg() {
+            const sourceCard = document.getElementById('receiptCard');
+            if (!sourceCard || typeof html2canvas !== 'function') {
+                showToast('Receipt renderer unavailable', true);
+                return;
+            }
+
+            if (!receiptVisible) {
+                receiptVisible = true;
+                syncReceiptVisibilityUI();
+                updateCalculations();
+            }
+
+            const exportHost = document.createElement('div');
+            exportHost.style.position = 'fixed';
+            exportHost.style.left = '-10000px';
+            exportHost.style.top = '0';
+            exportHost.style.width = '440px';
+            exportHost.style.backgroundColor = '#ffffff';
+            exportHost.style.zIndex = '-1';
+            exportHost.style.pointerEvents = 'none';
+
+            const clone = sourceCard.cloneNode(true);
+            clone.removeAttribute('id');
+            clone.classList.add('receipt-export-clone');
+            clone.style.width = '420px';
+            clone.style.maxWidth = '420px';
+            clone.style.margin = '0 auto';
+            clone.style.backgroundColor = '#ffffff';
+            clone.style.color = '#0f172a';
+            clone.style.overflow = 'visible';
+
+            exportHost.appendChild(clone);
+            document.body.appendChild(exportHost);
+
+            try {
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
+
+                const canvas = await html2canvas(clone, {
+                    scale: 3,
+                    backgroundColor: '#ffffff',
+                    useCORS: true,
+                    logging: false,
+                    width: clone.scrollWidth,
+                    height: clone.scrollHeight,
+                    windowWidth: clone.scrollWidth + 40,
+                    windowHeight: clone.scrollHeight + 40
+                });
+
+                const safeSlug = (receiptTitle || DEFAULT_RECEIPT_TITLE)
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-|-$/g, '') || 'bill-split-receipt';
+                const fileName = `${safeSlug}-${new Date().toISOString().slice(0, 10)}.jpg`;
+                const jpgDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+
+                if (isIosDevice()) {
+                    const jpgBlob = dataUrlToBlob(jpgDataUrl);
+                    const jpgFile = new File([jpgBlob], fileName, { type: 'image/jpeg' });
+
+                    if (
+                        typeof navigator.share === 'function' &&
+                        typeof navigator.canShare === 'function' &&
+                        navigator.canShare({ files: [jpgFile] })
+                    ) {
+                        try {
+                            await navigator.share({
+                                files: [jpgFile],
+                                title: (receiptTitle || DEFAULT_RECEIPT_TITLE)
+                            });
+                            showToast('Receipt JPEG shared!');
+                            return;
+                        } catch (shareErr) {
+                            if (shareErr && shareErr.name === 'AbortError') {
+                                showToast('Share cancelled', true);
+                                return;
+                            }
+                            console.warn('Direct iOS share fallback to modal:', shareErr);
+                        }
+                    }
+
+                    openIosReceiptModal(jpgDataUrl, jpgFile, fileName);
+                    showToast('Receipt ready — tap Share / Save or hold image');
+                    return;
+                }
+
+                const jpgBlob = dataUrlToBlob(jpgDataUrl);
+                const blobUrl = URL.createObjectURL(jpgBlob);
+                const link = document.createElement('a');
+                link.download = fileName;
+                link.href = blobUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 1500);
+                showToast('Receipt JPG downloaded!');
+            } catch (err) {
+                console.error('JPG export failed:', err);
+                showToast('Could not export JPG — you can screenshot the receipt', true);
+            } finally {
+                if (exportHost.parentNode) {
+                    exportHost.parentNode.removeChild(exportHost);
+                }
             }
         }
 
         function generateSummaryText(grandTotal, personTotals, unassignedItemsCount, unassignedCost) {
+            const previewEl = document.getElementById('summaryPreviewBox');
+            if (!previewEl) return;
+
             const activeTitle = (receiptTitle || DEFAULT_RECEIPT_TITLE).toUpperCase();
             let summary = `${activeTitle}\n`;
             summary += `---------------------------------\n`;
@@ -1272,7 +1371,7 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
             summary += `PER-PERSON EXPENSES\n`;
             summary += `---------------------------------\n`;
             people.forEach(p => {
-                const data = personTotals[p.id];
+                const data = personTotals[p.id] || { totalOwed: 0, itemShares: [] };
                 summary += `${p.name.toUpperCase()}: ${formatEUR(data.totalOwed)}\n`;
                 if (data.itemShares.length > 0) {
                     data.itemShares.forEach(share => {
@@ -1291,13 +1390,14 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                 summary += `UNASSIGNED ENTRIES TOTAL: ${formatEUR(unassignedCost)}\n\n`;
             }
 
-            summary += `Mr.Bhone's Bill Splitter`;
+            summary += `CALCULATED WITH BILL SPLITTER`;
 
-            document.getElementById('summaryPreviewBox').textContent = summary;
+            previewEl.textContent = summary;
         }
 
         function copySummaryToClipboard() {
-            const summaryText = document.getElementById('summaryPreviewBox').textContent;
+            const previewEl = document.getElementById('summaryPreviewBox');
+            const summaryText = previewEl ? previewEl.textContent : '';
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(summaryText)
                     .then(() => showToast('Summary copied to clipboard!'))
@@ -1329,8 +1429,9 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
         function showToast(msg, isWarning = false) {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
-            toastMessage.textContent = msg;
+            if (!toast || !toastMessage) return;
 
+            toastMessage.textContent = msg;
             toast.className = `fixed bottom-6 right-6 ${isWarning ? 'bg-amber-600' : 'bg-emerald-600'} text-white px-4 py-3 rounded-xl shadow-2xl font-medium text-sm transform translate-y-0 opacity-100 transition-all duration-300 flex items-center gap-2 z-50`;
 
             if (toastTimer) {
@@ -1349,6 +1450,142 @@ Coupon -€2.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
         }
+
+        function setupEventListeners() {
+            const btnHeaderSplit = document.getElementById('btnHeaderSplitView');
+            const btnHeaderReceipt = document.getElementById('btnHeaderReceiptView');
+            if (btnHeaderSplit) btnHeaderSplit.addEventListener('click', () => setTopViewMode('split'));
+            if (btnHeaderReceipt) btnHeaderReceipt.addEventListener('click', () => setTopViewMode('receipt'));
+
+            const titleInput = document.getElementById('receiptTitleInput');
+            if (titleInput) {
+                titleInput.addEventListener('input', (e) => {
+                    receiptTitle = e.target.value;
+                    updateReceiptTitleDisplay();
+                    saveState();
+                    updateCalculations();
+                });
+                titleInput.addEventListener('blur', (e) => {
+                    const trimmed = e.target.value.trim();
+                    receiptTitle = trimmed || DEFAULT_RECEIPT_TITLE;
+                    e.target.value = receiptTitle;
+                    updateReceiptTitleDisplay();
+                    saveState();
+                    updateCalculations();
+                });
+            }
+
+            const btnAddPerson = document.getElementById('btnAddPerson');
+            if (btnAddPerson) btnAddPerson.addEventListener('click', addPerson);
+
+            const tabSingle = document.getElementById('tabSingleBtn');
+            const tabBulk = document.getElementById('tabBulkBtn');
+            const singleForm = document.getElementById('addItemForm');
+            const bulkContainer = document.getElementById('bulkPasteContainer');
+
+            if (tabSingle && tabBulk && singleForm && bulkContainer) {
+                tabSingle.addEventListener('click', () => {
+                    tabSingle.className = 'px-3 py-1 rounded-lg bg-cyan-600 text-white transition';
+                    tabBulk.className = 'px-3 py-1 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5';
+                    singleForm.classList.remove('hidden');
+                    bulkContainer.classList.add('hidden');
+                });
+
+                tabBulk.addEventListener('click', () => {
+                    tabBulk.className = 'px-3 py-1 rounded-lg bg-cyan-600 text-white transition flex items-center gap-1.5';
+                    tabSingle.className = 'px-3 py-1 rounded-lg text-slate-400 hover:text-white transition';
+                    bulkContainer.classList.remove('hidden');
+                    singleForm.classList.add('hidden');
+                });
+            }
+
+            if (singleForm) {
+                singleForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const nameInput = document.getElementById('itemNameInput');
+                    const priceInput = document.getElementById('itemPriceInput');
+                    if (!nameInput || !priceInput) return;
+
+                    const name = nameInput.value.trim();
+                    const price = parsePriceInput(priceInput.value);
+
+                    if (!name || !Number.isFinite(price) || price === 0) {
+                        showToast('Enter a valid description and non-zero price', true);
+                        return;
+                    }
+
+                    items.push({
+                        id: Date.now() + Math.random(),
+                        name,
+                        price,
+                        selectedPeople: []
+                    });
+
+                    nameInput.value = '';
+                    priceInput.value = '';
+                    nameInput.focus();
+
+                    saveState();
+                    renderItems();
+                    updateCalculations();
+                });
+            }
+
+            const btnParseBulk = document.getElementById('btnParseBulk');
+            if (btnParseBulk) btnParseBulk.addEventListener('click', handleBulkPaste);
+
+            const btnClearItems = document.getElementById('btnClearItems');
+            if (btnClearItems) {
+                btnClearItems.addEventListener('click', () => {
+                    items = [];
+                    saveState();
+                    renderItems();
+                    updateCalculations();
+                    showToast('All items cleared');
+                });
+            }
+
+            const btnCopyShareLink = document.getElementById('btnCopyShareLink');
+            if (btnCopyShareLink) btnCopyShareLink.addEventListener('click', copyShareLink);
+
+            const btnCopySummary = document.getElementById('btnCopySummary');
+            if (btnCopySummary) btnCopySummary.addEventListener('click', copySummaryToClipboard);
+
+            const btnToggleReceipt = document.getElementById('btnToggleReceipt');
+            if (btnToggleReceipt) btnToggleReceipt.addEventListener('click', toggleReceiptView);
+
+            const btnDownloadReceiptJpg = document.getElementById('btnDownloadReceiptJpg');
+            if (btnDownloadReceiptJpg) btnDownloadReceiptJpg.addEventListener('click', downloadReceiptAsJpg);
+
+            const btnCloseIosModal = document.getElementById('btnCloseIosModal');
+            const btnIosDone = document.getElementById('btnIosDone');
+            const btnIosNativeShare = document.getElementById('btnIosNativeShare');
+            const iosModal = document.getElementById('iosReceiptModal');
+
+            if (btnCloseIosModal) btnCloseIosModal.addEventListener('click', closeIosReceiptModal);
+            if (btnIosDone) btnIosDone.addEventListener('click', closeIosReceiptModal);
+            if (btnIosNativeShare) btnIosNativeShare.addEventListener('click', triggerIosNativeShare);
+            if (iosModal) {
+                iosModal.addEventListener('click', (e) => {
+                    if (e.target === iosModal) {
+                        closeIosReceiptModal();
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            const loadedFromHash = loadSharedStateFromHash();
+            syncTitleInput();
+            setupEventListeners();
+            renderPeople();
+            renderItems();
+            updateCalculations();
+            if (loadedFromHash) {
+                showToast('Loaded shared bill split!');
+            }
+        });
     </script>
 </body>
 </html>
